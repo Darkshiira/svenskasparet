@@ -44,7 +44,7 @@ const learningAreas = [
     level: "Grundnivå",
     progress: 40,
     color: "coral",
-    image: "/images/en-eller-ett-icon.png",
+    image: "/images/En-eller-ett-icon.png",
     href: "/exercises/en-eller-ett",
   },
   {
