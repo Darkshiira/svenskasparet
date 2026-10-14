@@ -2,6 +2,7 @@
 
 import { recordAnswer } from "@/app/lib/progress";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -100,6 +101,7 @@ function toggleTrickyWord(word: string): boolean {
 }
 
 export default function EnEllerEttPage() {
+  const pathname = usePathname();
   const [questions, setQuestions] = useState<typeof enEttQuestions>([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -109,6 +111,8 @@ export default function EnEllerEttPage() {
 
   useEffect(() => {
     function handleLeave() {
+      setQuestions([]);
+      setGameStarted(false);
       setQuestionIndex(0);
       setSelectedAnswer(null);
       setScore(0);
@@ -170,15 +174,33 @@ export default function EnEllerEttPage() {
       window.removeEventListener("storage", updateSavedWords);
     };
   }, []);
+  useEffect(() => {
+    if (pathname !== "/exercises/en-eller-ett") return;
 
-  const finished = questionIndex >= questions.length;
+    const start = () => {
+      setQuestions(getRandomQuestions());
+      setQuestionIndex(0);
+      setSelectedAnswer(null);
+      setScore(0);
+      setGameStarted(true);
+    };
+
+    start();
+  }, [pathname]);
+  const finished =
+    gameStarted && questions.length > 0 && questionIndex >= questions.length;
   const question = questions[questionIndex];
   const answered = selectedAnswer !== null;
   const isCorrect = answered && selectedAnswer === question?.correctArticle;
 
   const isWordSaved = question ? savedWords.includes(question.word) : false;
 
-  const progress = finished ? 100 : (questionIndex / questions.length) * 100;
+  const progress =
+    questions.length === 0
+      ? 0
+      : finished
+        ? 100
+        : (questionIndex / questions.length) * 100;
 
   function handleAnswer(answer: Article) {
     if (answered || !question) return;
@@ -270,7 +292,11 @@ export default function EnEllerEttPage() {
         </section>
 
         <section className="rounded-3xl border border-[#e1e9eb] bg-white p-5 shadow-[0_12px_40px_rgba(30,70,75,0.05)] sm:p-8">
-          {!finished ? (
+          {!gameStarted || questions.length === 0 ? (
+            <div className="py-12 text-center text-[#617c81]">
+              Förbereder övningen...
+            </div>
+          ) : !finished ? (
             <>
               <div className="mb-7">
                 <div className="mb-3 flex items-center justify-between gap-4 text-sm">
@@ -489,7 +515,13 @@ export default function EnEllerEttPage() {
 
                 <Link
                   href="/"
-                  onClick={handleRestart}
+                  onClick={() => {
+                    setQuestions([]);
+                    setGameStarted(false);
+                    setQuestionIndex(0);
+                    setSelectedAnswer(null);
+                    setScore(0);
+                  }}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#cbdedd] bg-white px-6 py-3 font-bold text-[#285b5b] transition hover:bg-[#f4f9f7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17665d]"
                 >
                   Till startsidan

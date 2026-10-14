@@ -1,10 +1,10 @@
-
 export type Mode = "choice" | "fill" | "double";
 
 export type Question = {
   id: string;
   type: Mode;
   prompt: string;
+  description?: string;
   answer: string;
   options?: string[];
   explanation: string;
@@ -16,7 +16,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-jättebra",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["jätte bra", "jättebra", "jätte braa"],
+      options: ["jätte bra", "jättebra", "jäte bra"],
       answer: "jättebra",
       explanation: "Jättebra skrivs som ett ord.",
     },
@@ -32,15 +32,15 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-manniska",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["människa", "mäniska", "männiscka"],
+      options: ["människa", "mäniska", "männischa"],
       answer: "människa",
-      explanation: "Människa stavas med två n och ett s.",
+      explanation: "Människa stavas med två n och ett k.",
     },
     {
       id: "choice-verkligen",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["värkligen", "verkligen", "värklien"],
+      options: ["värkligen", "verkligen", "värklijen"],
       answer: "verkligen",
       explanation: "Verkligen stavas med e, inte ä.",
     },
@@ -48,7 +48,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-plötsligt",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["plötsigt", "plötsligt", "plötslligt"],
+      options: ["plötsigt", "plötsligt", "plöttsligt"],
       answer: "plötsligt",
       explanation: "Plötsligt stavas med l efter t.",
     },
@@ -56,7 +56,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-kanske",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["kanshe", "kanskeh", "kanske"],
+      options: ["kanshe", "kansje", "kanske"],
       answer: "kanske",
       explanation: "Kanske stavas med k och s.",
     },
@@ -88,15 +88,16 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-fortfarande",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["fortfarande", "fortfarnde", "fortfarandee"],
+      options: ["fortfarande", "fortfarnde", "fortfarandde"],
       answer: "fortfarande",
-      explanation: "Fortfarande innehåller alla bokstäver i fort-farande.",
+      explanation:
+        "Fortfarande innehåller alla bokstäver i fort-farande en gång.",
     },
     {
       id: "choice-möjlighet",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["möjlighet", "möjlihet", "möjlighet"],
+      options: ["möjlighet", "mujlihet", "mujlighet"],
       answer: "möjlighet",
       explanation: "Möjlighet stavas med g efter i.",
     },
@@ -104,7 +105,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-bibliotek",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["biblotek", "bibliotek", "biblioteek"],
+      options: ["biblotek", "bibliotek", "biblijotek"],
       answer: "bibliotek",
       explanation: "Bibliotek stavas med i efter biblio.",
     },
@@ -112,7 +113,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-försöka",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["försöka", "försöcka", "försöka"],
+      options: ["försöka", "försöcka", "förschöka"],
       answer: "försöka",
       explanation: "Försöka stavas med k, inte ck.",
     },
@@ -120,7 +121,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-beskriva",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["beskriva", "beskriffa", "beskriva"],
+      options: ["beskriva", "beskriffa", "bäskriva"],
       answer: "beskriva",
       explanation: "Beskriva stavas med v.",
     },
@@ -128,7 +129,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-berätta",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["bereta", "berätta", "berätta"],
+      options: ["bereta", "berätta", "beräta"],
       answer: "berätta",
       explanation: "Berätta stavas med ä och dubbel-t.",
     },
@@ -136,7 +137,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-förklara",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["förklara", "förklahra", "förklaraa"],
+      options: ["förklara", "förklahra", "furklara"],
       answer: "förklara",
       explanation: "Förklara stavas utan h efter k.",
     },
@@ -144,7 +145,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-vanligt",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["vanlit", "vanligt", "vanligt"],
+      options: ["vanlit", "vanlijt", "vanligt"],
       answer: "vanligt",
       explanation: "Vanligt slutar på -ligt.",
     },
@@ -168,7 +169,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-födelsedag",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["födelsedag", "födelsedagg", "födelsedag"],
+      options: ["födelsedag", "födelsedagg", "fudelsedag"],
       answer: "födelsedag",
       explanation: "Födelsedag är sammansatt av födelse och dag.",
     },
@@ -176,7 +177,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-plötsligen",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["plötsligen", "plötsligen", "plötsligen"],
+      options: ["plötsligen", "plutsligen", "plätsligen"],
       answer: "plötsligen",
       explanation: "Plötsligen är ett korrekt ord som betyder helt oväntat.",
     },
@@ -200,7 +201,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-överhuvudtaget",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["över huvud taget", "överhuvudtaget", "överhuvutaget"],
+      options: ["över huvud taget", "överhuvudtaget", "över huvutaget"],
       answer: "överhuvudtaget",
       explanation: "Överhuvudtaget skrivs vanligtvis som ett ord.",
     },
@@ -216,7 +217,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-egenskap",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["egenskap", "ägenskap", "egenskapp"],
+      options: ["egenskap", "ägenskap", "igenskap"],
       answer: "egenskap",
       explanation: "Egenskap börjar med e.",
     },
@@ -232,7 +233,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "choice-förvånad",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
-      options: ["förvånad", "förvånnad", "förvånad"],
+      options: ["förvånad", "furvånnad", "furvånad"],
       answer: "förvånad",
       explanation: "Förvånad stavas med ett n.",
     },
@@ -253,227 +254,237 @@ export const questions: Record<Mode, Question[]> = {
       explanation: "Särskilt stavas med ett l efter k.",
     },
   ],
-
-  // Lägg till fill i samma questions-objekt,
-  // efter choice och före double.
   fill: [
-    {
-      id: "fill-flitiga",
-      type: "fill",
-      prompt: "fli__a (någon som visar flit)",
-      answer: "flitiga",
-      explanation: "Flitiga stavas f-l-i-t-i-g-a.",
-    },
     {
       id: "fill-smör",
       type: "fill",
-      prompt: "sm__ (något du kan ha på en smörgås)",
+      prompt: "sm__",
+      description: "Något du kan ha på en macka.",
       answer: "smör",
       explanation: "Smör stavas med ö.",
     },
     {
       id: "fill-fisk",
       type: "fill",
-      prompt: "f__sk (ett djur som lever i vatten)",
+      prompt: "f__k",
+      description: "Ett djur som lever i vatten.",
       answer: "fisk",
       explanation: "Fisk stavas f-i-s-k.",
     },
     {
       id: "fill-hjärta",
       type: "fill",
-      prompt: "hj__ta (något som slår i kroppen)",
+      prompt: "hj__ta",
+      description: "Något som slår i kroppen.",
       answer: "hjärta",
       explanation: "Hjärta börjar med hj och har ä i mitten.",
     },
     {
-      id: "fill-sky",
-      type: "fill",
-      prompt: "sk_ (något som kan finnas på himlen)",
-      answer: "sky",
-      explanation: "Sky stavas s-k-y.",
-    },
-    {
       id: "fill-vänner",
       type: "fill",
-      prompt: "v__ner (personer du tycker om)",
+      prompt: "v__ner",
+      description: "Personer du tycker om.",
       answer: "vänner",
       explanation: "Vänner stavas med ä och dubbel-n.",
     },
     {
       id: "fill-fönster",
       type: "fill",
-      prompt: "f__ster (finns i en vägg)",
+      prompt: "f__ster",
+      description: "Något du kan titta ut genom.",
       answer: "fönster",
       explanation: "Fönster stavas med ö.",
     },
     {
       id: "fill-bänk",
       type: "fill",
-      prompt: "b__k (något du kan sitta på)",
+      prompt: "b__k",
+      description: "Något du kan sitta på.",
       answer: "bänk",
       explanation: "Bänk stavas med ä.",
     },
     {
       id: "fill-skugga",
       type: "fill",
-      prompt: "sk__ga (motsats till direkt solljus)",
+      prompt: "sk__ga",
+      description: "Ett mörkare område där ljuset inte når fram.",
       answer: "skugga",
       explanation: "Skugga stavas med u och dubbel-g.",
     },
     {
       id: "fill-morgon",
       type: "fill",
-      prompt: "m__gon (dagen börjar då)",
+      prompt: "m__gon",
+      description: "Den första delen av dagen.",
       answer: "morgon",
       explanation: "Morgon stavas m-o-r-g-o-n.",
     },
     {
       id: "fill-känna",
       type: "fill",
-      prompt: "k__na (att uppleva en känsla)",
+      prompt: "k__na",
+      description: "Att uppleva en känsla.",
       answer: "känna",
       explanation: "Känna stavas med ä och dubbel-n.",
     },
     {
       id: "fill-sommar",
       type: "fill",
-      prompt: "so__ar (en varm årstid)",
+      prompt: "so__ar",
+      description: "Årstiden då det oftast är varmast.",
       answer: "sommar",
       explanation: "Sommar stavas med dubbel-m.",
     },
     {
       id: "fill-vinter",
       type: "fill",
-      prompt: "v__ter (en kall årstid)",
+      prompt: "v__ter",
+      description: "Årstiden då det oftast är kallast.",
       answer: "vinter",
       explanation: "Vinter stavas med i efter v.",
     },
     {
       id: "fill-fjäril",
       type: "fill",
-      prompt: "fj__il (en insekt med vingar)",
+      prompt: "fj__il",
+      description: "En insekt med stora, färgglada vingar.",
       answer: "fjäril",
       explanation: "Fjäril stavas med ä.",
     },
     {
       id: "fill-blomma",
       type: "fill",
-      prompt: "bl__ma (en växt som kan blomma)",
+      prompt: "bl__ma",
+      description: "En växt som ofta har färgglada kronblad.",
       answer: "blomma",
       explanation: "Blomma stavas med dubbel-m.",
     },
     {
       id: "fill-bibliotek",
       type: "fill",
-      prompt: "biblio__k (en plats med böcker)",
+      prompt: "biblio___",
+      description: "En plats där du kan låna böcker.",
       answer: "bibliotek",
-      explanation: "Bibliotek stavas med t före e och k.",
+      explanation: "Bibliotek stavas med bokstavsföljden -tek på slutet.",
     },
     {
       id: "fill-nyckel",
       type: "fill",
-      prompt: "ny__el (används för att låsa upp)",
+      prompt: "ny__el",
+      description: "Något du använder för att låsa upp en dörr.",
       answer: "nyckel",
       explanation: "Nyckel stavas med ck.",
     },
     {
       id: "fill-födelsedag",
       type: "fill",
-      prompt: "födelse__g (dagen du föddes)",
+      prompt: "f_delse___",
+      description: "Dagen då du firar att du blivit ett år äldre.",
       answer: "födelsedag",
-      explanation: "Födelsedag består av födelse och dag.",
+      explanation: "Födelsedag består av orden födelse och dag.",
     },
     {
-      id: "fill-vänlig",
+      id: "fill-ugn",
       type: "fill",
-      prompt: "v__lig (snäll och trevlig)",
-      answer: "vänlig",
-      explanation: "Vänlig stavas med ä.",
+      prompt: "u__",
+      description: "Något du kan baka bröd eller laga mat i.",
+      answer: "ugn",
+      explanation: "Ugn stavas med g och sedan n.",
     },
     {
       id: "fill-regn",
       type: "fill",
-      prompt: "r__n (vatten som faller från moln)",
+      prompt: "r__n",
+      description: "Vattendroppar som faller från molnen.",
       answer: "regn",
       explanation: "Regn stavas r-e-g-n.",
     },
     {
       id: "fill-roligt",
       type: "fill",
-      prompt: "r__ligt (något som är kul)",
+      prompt: "r__igt",
+      description: "Något som är kul att göra.",
       answer: "roligt",
       explanation: "Roligt stavas med o efter r.",
     },
     {
       id: "fill-nyfiken",
       type: "fill",
-      prompt: "ny__ken (vill gärna veta mer)",
+      prompt: "ny__ken",
+      description: "När du gärna vill veta eller lära dig mer.",
       answer: "nyfiken",
-      explanation: "Nyfiken stavas med f.",
+      explanation: "Nyfiken stavas med y och k.",
     },
     {
       id: "fill-skriva",
       type: "fill",
-      prompt: "sk__va (göra ord med penna eller tangentbord)",
+      prompt: "sk__va",
+      description: "Att skapa ord med en penna eller ett tangentbord.",
       answer: "skriva",
       explanation: "Skriva stavas med r efter k.",
     },
     {
       id: "fill-börja",
       type: "fill",
-      prompt: "b__ja (motsats till sluta)",
+      prompt: "b___a",
+      description: "Motsatsen till att sluta.",
       answer: "börja",
-      explanation: "Börja stavas med ö.",
+      explanation: "Börja stavas med ö och j.",
     },
     {
       id: "fill-försiktig",
       type: "fill",
-      prompt: "förs__tig (göra något varsamt)",
+      prompt: "förs__tig",
+      description: "När du gör något varsamt och är uppmärksam.",
       answer: "försiktig",
-      explanation: "Försiktig stavas med i efter t.",
+      explanation: "Försiktig stavas med i och k.",
     },
     {
       id: "fill-berätta",
       type: "fill",
-      prompt: "ber__ta (säga eller beskriva något)",
+      prompt: "ber__ta",
+      description: "Att säga eller beskriva något för någon.",
       answer: "berätta",
       explanation: "Berätta stavas med ä och dubbel-t.",
     },
     {
       id: "fill-äventyrlig",
       type: "fill",
-      prompt: "__ventyrlig (som gillar spännande saker)",
+      prompt: "_ventyrlig",
+      description: "Någon som tycker om spännande upplevelser.",
       answer: "äventyrlig",
       explanation: "Äventyrlig börjar med ä.",
     },
     {
       id: "fill-människor",
       type: "fill",
-      prompt: "männi__or (flera personer)",
+      prompt: "männi__or",
+      description: "Ett annat ord för flera personer.",
       answer: "människor",
       explanation: "Människor stavas med sk i mitten.",
     },
     {
       id: "fill-överraska",
       type: "fill",
-      prompt: "överra__a (göra något oväntat)",
+      prompt: "överra__a",
+      description: "Att göra något som någon inte väntat sig.",
       answer: "överraska",
-      explanation: "Överraska stavas med dubbel-r och s-k.",
+      explanation: "Överraska stavas med dubbel-r och sk.",
     },
     {
       id: "fill-stjärna",
       type: "fill",
-      prompt: "stj__na (lyser på natthimlen)",
+      prompt: "s__ärna",
+      description: "Något som lyser på natthimlen.",
       answer: "stjärna",
       explanation: "Stjärna stavas med stj i början och ä.",
     },
   ],
-
   double: [
     {
       id: "double-vila",
       type: "double",
-      prompt: "Jag vill ___ i solen.",
+      prompt: "Jag la mig för att ___ .",
       options: ["vila", "villa"],
       answer: "vila",
       explanation: "Vila betyder att ta det lugnt. Villa är ett hus.",
@@ -503,14 +514,6 @@ export const questions: Record<Mode, Question[]> = {
       explanation: "Glass är något man äter. Glas kan vara ett dricksglas.",
     },
     {
-      id: "double-öppna",
-      type: "double",
-      prompt: "Kan du ___ dörren?",
-      options: ["öppna", "öppnna"],
-      answer: "öppna",
-      explanation: "Öppna stavas med två p och ett n.",
-    },
-    {
       id: "double-läsa",
       type: "double",
       prompt: "Jag ska ___ en bok.",
@@ -529,7 +532,7 @@ export const questions: Record<Mode, Question[]> = {
     {
       id: "double-trött",
       type: "double",
-      prompt: "Jag är ___ efter promenaden.",
+      prompt: "Jag är ___ på kvällen.",
       options: ["trött", "tröt"],
       answer: "trött",
       explanation: "Trött stavas med dubbel-t på slutet.",
@@ -554,7 +557,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "double-hall-hallå",
       type: "double",
       prompt: "När jag svarar i telefon säger jag ofta ___.",
-      options: ["hallå", "halllå"],
+      options: ["halå", "hallå"],
       answer: "hallå",
       explanation: "Hallå stavas med ett l i mitten.",
     },
@@ -594,7 +597,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "double-nummer",
       type: "double",
       prompt: "Vilket ___ har du i kön?",
-      options: ["nummer", "numer"],
+      options: ["numer", "nummer"],
       answer: "nummer",
       explanation: "Nummer stavas med dubbel-m.",
     },
@@ -602,7 +605,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "double-äpple",
       type: "double",
       prompt: "Jag äter ett ___.",
-      options: ["äpple", "äple"],
+      options: ["äple", "äpple"],
       answer: "äpple",
       explanation: "Äpple stavas med dubbel-p.",
     },
@@ -610,7 +613,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "double-klocka",
       type: "double",
       prompt: "Jag tittar på min ___.",
-      options: ["klocka", "klockka"],
+      options: ["kloka", "klocka"],
       answer: "klocka",
       explanation: "Klocka stavas med ck.",
     },
@@ -618,7 +621,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "double-tack",
       type: "double",
       prompt: "Jag säger ___ när någon hjälper mig.",
-      options: ["tack", "tak"],
+      options: ["tak", "tack"],
       answer: "tack",
       explanation: "Tack stavas med ck. Tak är det som finns ovanför ett rum.",
     },
@@ -658,7 +661,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "double-simma",
       type: "double",
       prompt: "Jag tycker om att ___.",
-      options: ["simma", "sima"],
+      options: ["sima", "simma"],
       answer: "simma",
       explanation: "Simma stavas med dubbel-m.",
     },
@@ -679,12 +682,12 @@ export const questions: Record<Mode, Question[]> = {
       explanation: "Hitta stavas med dubbel-t.",
     },
     {
-      id: "double-ramla",
+      id: "double-ramlar",
       type: "double",
       prompt: "Akta så att du inte ___.",
-      options: ["ramla", "ramlla"],
-      answer: "ramla",
-      explanation: "Ramla stavas med ett l.",
+      options: ["ramlar", "rammlar"],
+      answer: "ramlar",
+      explanation: "Ramlar stavas med ett m.",
     },
     {
       id: "double-äta",
@@ -698,7 +701,7 @@ export const questions: Record<Mode, Question[]> = {
       id: "double-vatten",
       type: "double",
       prompt: "Jag dricker ett glas ___.",
-      options: ["vatten", "vaten"],
+      options: ["vaten", "vatten"],
       answer: "vatten",
       explanation: "Vatten stavas med dubbel-t.",
     },
@@ -706,9 +709,68 @@ export const questions: Record<Mode, Question[]> = {
       id: "double-hellre",
       type: "double",
       prompt: "Jag vill ___ läsa än titta på tv.",
-      options: ["hellre", "helre"],
+      options: ["helre", "hellre"],
       answer: "hellre",
       explanation: "Hellre stavas med dubbel-l.",
     },
   ],
 };
+
+/**
+ * Validates spelling questions in "Fyll i bokstäverna".
+ *
+ * Each underscore represents exactly one missing letter.
+ * All visible letters must match the correct answer.
+ *
+ * Runs only in development.
+ */
+export function validateFillQuestions(): void {
+  if (process.env.NODE_ENV !== "development") return;
+
+  const errors: string[] = [];
+
+  for (const question of questions.fill) {
+    const prompt = Array.from(question.prompt.toLocaleLowerCase("sv-SE"));
+    const answer = Array.from(question.answer.toLocaleLowerCase("sv-SE"));
+
+    // 1. Check that the lengths match
+    if (prompt.length !== answer.length) {
+      errors.push(
+        `[${question.id}] Length mismatch: "${question.prompt}" has ${prompt.length} characters, but "${question.answer}" has ${answer.length}.`,
+      );
+
+      continue;
+    }
+
+    // 2. Check that the question contains missing letters
+    if (!prompt.includes("_")) {
+      errors.push(
+        `[${question.id}] No missing letters found in "${question.prompt}".`,
+      );
+    }
+
+    // 3. Check that visible letters match the answer
+    for (let i = 0; i < prompt.length; i++) {
+      if (prompt[i] !== "_" && prompt[i] !== answer[i]) {
+        errors.push(
+          `[${question.id}] Wrong letter at position ${i + 1}: "${prompt[i]}" should be "${answer[i]}".`,
+        );
+      }
+    }
+
+    // 4. Check that a description exists
+    if (!question.description?.trim()) {
+      errors.push(`[${question.id}] Missing description.`);
+    }
+  }
+
+  if (errors.length > 0) {
+    console.error(
+      `❌ Found ${errors.length} spelling question error(s):\n\n${errors.join("\n")}`,
+    );
+  } else {
+    console.info(
+      `✅ All ${questions.fill.length} fill-in spelling questions are valid!`,
+    );
+  }
+}

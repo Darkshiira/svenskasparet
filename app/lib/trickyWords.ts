@@ -1,10 +1,6 @@
-
 import { enEttQuestions } from "@/app/data/enEtt";
 
-export type TrickyExercise =
-  | "en-eller-ett"
-  | "snabbspåret"
-  | "stavningsjakten";
+export type TrickyExercise = "en-eller-ett" | "snabbspåret" | "stavning";
 
 export type TrickyMode = "choice" | "fill" | "double" | "article";
 
@@ -18,11 +14,11 @@ export type TrickyWord = {
   options?: string[];
   explanation: string;
   example?: string;
+  description?: string;
 };
 
 export const TRICKY_WORDS_KEY = "svenskasparet-tricky-words";
-export const TRICKY_WORDS_EVENT =
-  "svenskasparet-tricky-words-updated";
+export const TRICKY_WORDS_EVENT = "svenskasparet-tricky-words-updated";
 
 function notifyUpdated() {
   if (typeof window !== "undefined") {
@@ -100,15 +96,12 @@ export function saveTrickyWord(item: TrickyWord) {
     const words = getTrickyWords();
 
     const exists = words.some(
-      (word) =>
-        word.id === item.id && word.exercise === item.exercise,
+      (word) => word.id === item.id && word.exercise === item.exercise,
     );
 
     const updated = exists
       ? words.map((word) =>
-          word.id === item.id && word.exercise === item.exercise
-            ? item
-            : word,
+          word.id === item.id && word.exercise === item.exercise ? item : word,
         )
       : [...words, item];
 
@@ -131,3 +124,4 @@ export function removeTrickyWord(id: string, exercise: TrickyExercise) {
     console.error("Kunde inte ta bort det kluriga ordet:", error);
   }
 }
+

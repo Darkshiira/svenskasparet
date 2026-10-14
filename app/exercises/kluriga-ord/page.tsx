@@ -19,8 +19,8 @@ function exerciseLabel(exercise: TrickyWord["exercise"]) {
       return "En eller ett?";
     case "snabbspåret":
       return "Snabbspåret";
-    case "stavningsjakten":
-      return "Stavningsjakten";
+    case "stavning":
+      return "stavning";
     default:
       return exercise;
   }
@@ -246,6 +246,12 @@ export default function KlurigaOrdPage() {
                           <p className="mt-2 text-sm leading-6 text-[#648083]">
                             {word.prompt}
                           </p>
+
+                          {word.description && (
+                            <p className="mt-1 text-sm leading-6 text-[#496c72]">
+                              {word.description}
+                            </p>
+                          )}
                           <p className="mt-1 text-sm leading-6 text-[#496c72]">
                             Rätt svar:{" "}
                             <span className="font-semibold">{word.answer}</span>
@@ -315,11 +321,25 @@ export default function KlurigaOrdPage() {
                     {currentWord.prompt}
                   </h2>
 
-                  <div className="my-7 rounded-2xl bg-[#f0f6f4] px-5 py-10 text-center">
-                    <p className="text-3xl font-extrabold">
-                      {currentWord.word}
+                  {currentWord.description && (
+                    <p className="mt-3 text-sm leading-6 text-[#648083]">
+                      {currentWord.description}
                     </p>
-                  </div>
+                  )}
+
+                  {currentWord.exercise === "stavning" &&
+                    currentWord.mode === "fill" && (
+                      <p className="mt-3 text-sm font-medium text-[#17665d]">
+                        Skriv hela ordet i rutan nedanför.
+                      </p>
+                    )}
+                  {currentWord.exercise !== "stavning" && (
+                    <div className="my-7 rounded-2xl bg-[#f0f6f4] px-5 py-10 text-center">
+                      <p className="text-3xl font-extrabold">
+                        {currentWord.word}
+                      </p>
+                    </div>
+                  )}
 
                   {useChoiceButtons ? (
                     <div className="grid grid-cols-2 gap-4">

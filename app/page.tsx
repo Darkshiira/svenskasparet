@@ -372,10 +372,10 @@ export default function Home() {
 
           <article
             id="kluriga-ord"
-            className="flex items-center gap-3 rounded-[22px] border border-[#e3dcf3] bg-gradient-to-br from-[#f5f1fd] to-[#efedf8] p-4 sm:gap-5 sm:p-6"
+            className="flex flex-wrap items-center gap-3 rounded-[22px] border border-[#e3dcf3] bg-gradient-to-br from-[#f5f1fd] to-[#efedf8] p-4 sm:flex-nowrap sm:gap-5 sm:p-6"
           >
             {/* Lightbulb on the left */}
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center sm:h-28 sm:w-28">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center sm:h-28 sm:w-28">
               <Image
                 src="/images/kluriga-ord-icon-lightbulb.png"
                 alt=""
@@ -384,6 +384,7 @@ export default function Home() {
                 className="h-full w-full object-contain"
               />
             </div>
+
             {/* Text in the middle */}
             <div className="min-w-0 flex-1">
               <h2 className="text-lg font-extrabold text-[#183f47] sm:text-xl">
@@ -394,24 +395,27 @@ export default function Home() {
                 Samla ord du vill öva mer på och kom tillbaka till dem senare.
               </p>
             </div>
-            {/* Flashcards above the button on the right */}
-            <div className="flex w-32 shrink-0 flex-col items-center gap-2 sm:w-48 sm:gap-3">
-              <div className="relative h-20 w-full sm:h-28">
+
+            {/* Flashcards and button on the right on desktop */}
+            <div className="flex w-full flex-col items-start gap-3 sm:w-48 sm:shrink-0 sm:items-center sm:gap-3">
+              {/* Flashcards: hidden on mobile */}
+              <div className="relative hidden h-28 w-full sm:block">
                 <Image
                   src="/images/kluriga-ord-flashcards-icon.png"
                   alt="Ord på kort med ett äpple"
                   fill
-                  sizes="(max-width: 640px) 128px, 192px"
-                  className="object-contain scale-125"
+                  sizes="192px"
+                  className="scale-125 object-contain"
                 />
               </div>
 
+              {/* Button on its own row on mobile */}
               <Link
                 href="/exercises/kluriga-ord"
-                className="inline-flex min-h-10 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-[#b9addb] bg-white/50 px-3 text-xs font-bold text-[#5f4d89] transition hover:bg-white sm:gap-2 sm:px-4 sm:text-sm"
+                className="inline-flex min-h-11 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-[#b9addb] bg-white/70 px-4 text-xs font-bold text-[#5f4d89] transition hover:bg-white sm:gap-2 sm:text-sm"
               >
                 Träna på ord
-                <ChevronRight size={14} />
+                <ChevronRight size={15} />
               </Link>
             </div>
           </article>
