@@ -1,13 +1,12 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowLeft,
   CheckCircle2,
   Clock3,
-  Leaf,
   RotateCcw,
   Trophy,
   XCircle,
@@ -39,54 +38,67 @@ export default function SnabbsparetPage() {
   const isCorrect = selectedAnswer === question?.correctArticle;
 
   function resetRound() {
-  setAnsweredCount(0);
-  setQuestions(enEttQuestions);
-  setQuestionIndex(0);
-  setScore(0);
-  setSecondsLeft(ROUND_SECONDS);
-  setSelectedAnswer(null);
-  setStarted(false);
-  setFinished(false);
-}
+    setAnsweredCount(0);
+    setQuestions(enEttQuestions);
+    setQuestionIndex(0);
+    setScore(0);
+    setSecondsLeft(ROUND_SECONDS);
+    setSelectedAnswer(null);
+    setStarted(false);
+    setFinished(false);
+  }
 
-useEffect(() => {
-  window.addEventListener("popstate", resetRound);
+  useEffect(() => {
+    function handleLeave() {
+      setAnsweredCount(0);
+      setQuestions(enEttQuestions);
+      setQuestionIndex(0);
+      setScore(0);
+      setSecondsLeft(ROUND_SECONDS);
+      setSelectedAnswer(null);
+      setStarted(false);
+      setFinished(false);
+    }
 
-  return () => {
-    window.removeEventListener("popstate", resetRound);
-  };
-}, []);
+    window.addEventListener("exercise:leave", handleLeave);
+    window.addEventListener("popstate", handleLeave);
 
-function startRound() {
-  setQuestions(shuffleQuestions());
-  setQuestionIndex(0);
-  setScore(0);
-  setSecondsLeft(ROUND_SECONDS);
-  setSelectedAnswer(null);
-  setFinished(false);
-  setStarted(true);
-  setAnsweredCount(0);
-}
+    return () => {
+      window.removeEventListener("exercise:leave", handleLeave);
+      window.removeEventListener("popstate", handleLeave);
+    };
+  }, []);
 
-useEffect(() => {
-  if (!started || finished) return;
+  function startRound() {
+    setQuestions(shuffleQuestions());
+    setQuestionIndex(0);
+    setScore(0);
+    setSecondsLeft(ROUND_SECONDS);
+    setSelectedAnswer(null);
+    setFinished(false);
+    setStarted(true);
+    setAnsweredCount(0);
+  }
 
-  const timer = window.setInterval(() => {
-    setSecondsLeft((current) => Math.max(0, current - 1));
-  }, 1000);
+  useEffect(() => {
+    if (!started || finished) return;
 
-  return () => window.clearInterval(timer);
-}, [started, finished]);
+    const timer = window.setInterval(() => {
+      setSecondsLeft((current) => Math.max(0, current - 1));
+    }, 1000);
 
-useEffect(() => {
-  if (!started || finished || secondsLeft !== 0) return;
+    return () => window.clearInterval(timer);
+  }, [started, finished]);
 
-  const timeout = window.setTimeout(() => {
-    setFinished(true);
-  }, 0);
+  useEffect(() => {
+    if (!started || finished || secondsLeft !== 0) return;
 
-  return () => window.clearTimeout(timeout);
-}, [started, finished, secondsLeft]);
+    const timeout = window.setTimeout(() => {
+      setFinished(true);
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, [started, finished, secondsLeft]);
 
   function handleAnswer(answer: Article) {
     if (!started || finished || answered || !question) return;
@@ -114,44 +126,43 @@ useEffect(() => {
         ? words.filter((word) => word !== question.word)
         : Array.from(new Set([...words, question.word]));
 
-      localStorage.setItem(
-        TRICKY_WORDS_KEY,
-        JSON.stringify(updatedWords),
-      );
+      localStorage.setItem(TRICKY_WORDS_KEY, JSON.stringify(updatedWords));
     } catch {
       // Övningen fungerar även om ordlistan inte kan sparas.
     }
   }
 
-
-  function nextQuestion() {  
+  function nextQuestion() {
     if (!answered) return;
     if (questionIndex + 1 >= questions.length) {
-    // Alla ord har visats. Blanda dem och fortsätt!
-        setQuestions(shuffleQuestions());
-        setQuestionIndex(0);
-      } else {
-        setQuestionIndex((current) => current + 1);
-      }
-        setSelectedAnswer(null);
-      
+      // Alla ord har visats. Blanda dem och fortsätt!
+      setQuestions(shuffleQuestions());
+      setQuestionIndex(0);
+    } else {
+      setQuestionIndex((current) => current + 1);
+    }
+    setSelectedAnswer(null);
   }
 
-
   const accuracy =
-  answeredCount > 0
-    ? Math.round((score / answeredCount) * 100)
-    : 0;
+    answeredCount > 0 ? Math.round((score / answeredCount) * 100) : 0;
 
   return (
     <main className="min-h-screen bg-[#f3f7f9] px-4 py-6 text-[#173f45] sm:px-6 sm:py-10">
       <div className="mx-auto max-w-3xl">
-
         <section className="rounded-3xl border border-white bg-white p-6 shadow-sm sm:p-9">
           {!started && !finished && (
             <div className="py-6 text-center">
-              <div className="mx-auto mb-5 grid size-20 place-items-center rounded-3xl bg-[#e1f1e9] text-[#17665d]">
-                <Clock3 size={42} />
+              <div className="mx-auto mb-6 flex h-36 w-36 items-center justify-center sm:h-48 sm:w-48 md:h-56 md:w-56">
+                <Image
+                  src="/images/snabbsparet-icon.png"
+                  alt="Snabbspåret"
+                  width={460}
+                  height={460}
+                  priority
+                  className="h-full w-full object-contain"
+                  sizes="(max-width: 639px) 144px, (max-width: 767px) 192px, 224px"
+                />
               </div>
 
               <p className="mb-3 text-sm font-bold uppercase tracking-widest text-[#398577]">
@@ -163,8 +174,8 @@ useEffect(() => {
               </h1>
 
               <p className="mx-auto mt-4 max-w-lg leading-7 text-[#496c72]">
-                Hur många frågor klarar du på 60 sekunder? Svara så snabbt
-                du kan, samla poäng och se hur det gick.
+                Hur många frågor klarar du på 60 sekunder? Svara så snabbt du
+                kan, samla poäng och se hur det gick.
               </p>
 
               <div className="my-7 flex flex-wrap justify-center gap-3 text-sm font-semibold">
@@ -209,9 +220,7 @@ useEffect(() => {
                   aria-live="polite"
                 >
                   <Clock3 size={20} />
-                  <span className="text-2xl tabular-nums">
-                    {secondsLeft}s
-                  </span>
+                  <span className="text-2xl tabular-nums">{secondsLeft}s</span>
                 </div>
               </div>
 
@@ -247,9 +256,11 @@ useEffect(() => {
                     "border-[#d7e5e3] bg-white hover:border-[#58a995] hover:bg-[#f5faf8]";
 
                   if (answered && correctChoice) {
-                    buttonStyle = "border-[#58a995] bg-[#e5f5ec] text-[#17665d]";
+                    buttonStyle =
+                      "border-[#58a995] bg-[#e5f5ec] text-[#17665d]";
                   } else if (chosen && !isCorrect) {
-                    buttonStyle = "border-[#e7a18d] bg-[#fff0e9] text-[#a94732]";
+                    buttonStyle =
+                      "border-[#e7a18d] bg-[#fff0e9] text-[#a94732]";
                   }
 
                   return (
@@ -318,9 +329,7 @@ useEffect(() => {
                 Bra kämpat!
               </h1>
 
-              <p className="mt-4 text-[#496c72]">
-                Du fick
-              </p>
+              <p className="mt-4 text-[#496c72]">Du fick</p>
 
               <p className="my-2 text-6xl font-extrabold text-[#17665d]">
                 {score}
@@ -336,10 +345,10 @@ useEffect(() => {
 
               <p className="mx-auto mt-5 max-w-md leading-7 text-[#496c72]">
                 {answeredCount > 0 && score === answeredCount
-                ? "Fantastiskt! Du svarade rätt på alla frågor!"
-                : accuracy >= 50
-                ? "Riktigt bra jobbat! Fortsätt öva så blir du ännu säkrare."
-                : "Varje fråga är en chans att lära sig något nytt. Försök gärna igen!"}
+                  ? "Fantastiskt! Du svarade rätt på alla frågor!"
+                  : accuracy >= 50
+                    ? "Riktigt bra jobbat! Fortsätt öva så blir du ännu säkrare."
+                    : "Varje fråga är en chans att lära sig något nytt. Försök gärna igen!"}
               </p>
 
               <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -353,9 +362,9 @@ useEffect(() => {
                 </button>
 
                 <Link
-                href="/"
-                onClick={resetRound}
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#d7e5e3] px-6 py-3 font-bold text-[#315d61] transition hover:bg-[#f0f6f4]"
+                  href="/"
+                  onClick={resetRound}
+                  className="inline-flex min-h-12 items-center justify-center rounded-full border border-[#d7e5e3] px-6 py-3 font-bold text-[#315d61] transition hover:bg-[#f0f6f4]"
                 >
                   Till startsidan
                 </Link>

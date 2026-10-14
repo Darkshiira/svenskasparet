@@ -102,7 +102,11 @@ export function getActivity(): ActivityData {
       return { dates: [] };
     }
 
-    return { dates: parsed.dates };
+    return {
+  dates: [...new Set(parsed.dates)].filter((date) =>
+    /^\d{4}-\d{2}-\d{2}$/.test(date),
+  ),
+};
   } catch {
     return { dates: [] };
   }

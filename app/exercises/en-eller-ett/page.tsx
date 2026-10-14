@@ -1,8 +1,7 @@
-
 "use client";
 
 import { recordAnswer } from "@/app/lib/progress";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -14,48 +13,172 @@ import {
   XCircle,
 } from "lucide-react";
 import { enEttQuestions, type Article } from "@/app/data/enEtt";
+import { saveTrickyWord, removeTrickyWord } from "@/app/lib/trickyWords";
 
 const TRICKY_WORDS_KEY = "svenskasparet-tricky-words";
 
+const QUESTIONS_PER_GAME = 10;
+
+function getRandomQuestions() {
+  const shuffled = [...enEttQuestions];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled.slice(0, QUESTIONS_PER_GAME);
+}
+
 function saveAnswer(word: string, isCorrect: boolean) {
-  // Uppdatera den gemensamma statistiken och aktivitetsdagen.
   recordAnswer(isCorrect);
 
-  // Spara ordet om svaret blev fel.
+  // Automatically save incorrect answers to Mina kluriga ord.
+  if (!isCorrect) {
+    const question = enEttQuestions.find((item) => item.word === word);
+
+    if (!question) return;
+
+    saveTrickyWord({
+      id: question.id,
+      word: question.word,
+      exercise: "en-eller-ett",
+      mode: "article",
+      prompt: `Vilket passar: en eller ett ${question.word}?`,
+      answer: question.correctArticle,
+      options: ["en", "ett"],
+      explanation: question.explanation,
+      example: question.example,
+    });
+  }
+}
+
+function toggleTrickyWord(word: string): boolean {
+  const question = enEttQuestions.find((item) => item.word === word);
+
+  if (!question) return false;
+
   try {
     const stored = localStorage.getItem(TRICKY_WORDS_KEY);
     const parsed: unknown = stored ? JSON.parse(stored) : [];
 
-    const words: string[] = Array.isArray(parsed)
-      ? parsed.filter((item): item is string => typeof item === "string")
-      : [];
+    const words: unknown[] = Array.isArray(parsed) ? parsed : [];
 
-    const updatedWords = isCorrect
-      ? words.filter((savedWord) => savedWord !== word)
-      : Array.from(new Set([...words, word]));
+    const isSaved = words.some((item) => {
+      if (typeof item === "string") return item === word;
 
-    localStorage.setItem(
-      TRICKY_WORDS_KEY,
-      JSON.stringify(updatedWords),
-    );
+      if (typeof item === "object" && item !== null && "id" in item) {
+        const saved = item as { id?: unknown; exercise?: unknown };
+
+        return saved.id === question.id && saved.exercise === "en-eller-ett";
+      }
+
+      return false;
+    });
+
+    if (isSaved) {
+      removeTrickyWord(question.id, "en-eller-ett");
+      return false;
+    }
+
+    saveTrickyWord({
+      id: question.id,
+      word: question.word,
+      exercise: "en-eller-ett",
+      mode: "article",
+      prompt: `Vilket passar: en eller ett ${question.word}?`,
+      answer: question.correctArticle,
+      options: ["en", "ett"],
+      explanation: question.explanation,
+      example: question.example,
+    });
+
+    return true;
   } catch {
-    // Övningen ska fortfarande fungera om lagring inte är tillgänglig.
+    return false;
   }
 }
 
-
 export default function EnEllerEttPage() {
+  const [questions, setQuestions] = useState<typeof enEttQuestions>([]);
+  const [gameStarted, setGameStarted] = useState(false);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<Article | null>(null);
   const [score, setScore] = useState(0);
-  const finished = questionIndex >= enEttQuestions.length;
-  const question = enEttQuestions[questionIndex];
+  const [savedWords, setSavedWords] = useState<string[]>([]);
+
+  useEffect(() => {
+    function handleLeave() {
+      setQuestionIndex(0);
+      setSelectedAnswer(null);
+      setScore(0);
+    }
+
+    window.addEventListener("exercise:leave", handleLeave);
+
+    return () => {
+      window.removeEventListener("exercise:leave", handleLeave);
+    };
+  }, []);
+
+  useEffect(() => {
+    function updateSavedWords() {
+      try {
+        const stored = localStorage.getItem(TRICKY_WORDS_KEY);
+        const parsed: unknown = stored ? JSON.parse(stored) : [];
+
+        const words: string[] = Array.isArray(parsed)
+          ? parsed
+              .map((item) => {
+                if (typeof item === "string") {
+                  return item;
+                }
+
+                if (
+                  typeof item === "object" &&
+                  item !== null &&
+                  "word" in item &&
+                  typeof item.word === "string"
+                ) {
+                  return item.word;
+                }
+
+                return null;
+              })
+              .filter((word): word is string => word !== null)
+          : [];
+
+        setSavedWords(words);
+      } catch {
+        setSavedWords([]);
+      }
+    }
+
+    updateSavedWords();
+
+    window.addEventListener(
+      "svenskasparet-tricky-words-updated",
+      updateSavedWords,
+    );
+    window.addEventListener("storage", updateSavedWords);
+
+    return () => {
+      window.removeEventListener(
+        "svenskasparet-tricky-words-updated",
+        updateSavedWords,
+      );
+      window.removeEventListener("storage", updateSavedWords);
+    };
+  }, []);
+
+  const finished = questionIndex >= questions.length;
+  const question = questions[questionIndex];
   const answered = selectedAnswer !== null;
-  const isCorrect =
-    answered && selectedAnswer === question?.correctArticle;
-  const progress = finished
-    ? 100
-    : (questionIndex / enEttQuestions.length) * 100;
+  const isCorrect = answered && selectedAnswer === question?.correctArticle;
+
+  const isWordSaved = question ? savedWords.includes(question.word) : false;
+
+  const progress = finished ? 100 : (questionIndex / questions.length) * 100;
 
   function handleAnswer(answer: Article) {
     if (answered || !question) return;
@@ -71,62 +194,80 @@ export default function EnEllerEttPage() {
     saveAnswer(question.word, correct);
   }
 
+  function handleToggleTrickyWord() {
+    if (!question) return;
+
+    const wasSaved = savedWords.includes(question.word);
+    const saved = toggleTrickyWord(question.word);
+
+    // Update the UI only when the storage operation succeeds.
+    if (saved !== wasSaved) {
+      setSavedWords((current) =>
+        saved
+          ? [...current.filter((word) => word !== question.word), question.word]
+          : current.filter((word) => word !== question.word),
+      );
+    }
+  }
+
   function handleNext() {
     setSelectedAnswer(null);
     setQuestionIndex((current) => current + 1);
   }
 
   function handleRestart() {
+    setQuestions(getRandomQuestions());
     setQuestionIndex(0);
     setSelectedAnswer(null);
     setScore(0);
+    setGameStarted(true);
   }
 
   return (
     <main className="min-h-screen bg-[#f3f7f9] px-4 py-5 text-[#173f45] sm:px-6 sm:py-8">
       <div className="mx-auto max-w-4xl">
         <section className="relative mb-6 overflow-hidden rounded-3xl border border-white/80 bg-gradient-to-br from-[#fff0eb] via-[#fdf2ef] to-[#f9e9e3] p-6 sm:p-9">
-            <div className="relative z-10 flex items-center gap-3 sm:gap-6">
-                <div className="min-w-0 flex-1">
-                    <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/75 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[#92533f]">
-                        <BookOpen size={15} />
-                            Grammatik · Grundnivå
-                    </div>
+          <div className="relative z-10 flex items-center gap-3 sm:gap-6">
+            <div className="min-w-0 flex-1">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/75 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[#92533f]">
+                <BookOpen size={15} />
+                Grammatik · Grundnivå
+              </div>
 
-                    <h1 className="max-w-2xl text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">
-                            En eller ett?
-                    </h1>
+              <h1 className="max-w-2xl text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl">
+                En eller ett?
+              </h1>
 
-      <p className="mt-3 max-w-xl text-sm leading-7 text-[#795b57] sm:text-base">
-        Vilket ord passar? Ta en fråga i taget och lär dig varför svaret
-        är rätt. Det är helt okej att göra misstag längs vägen!
-      </p>
-    </div>
+              <p className="mt-3 max-w-xl text-sm leading-7 text-[#795b57] sm:text-base">
+                Vilket ord passar? Ta en fråga i taget och lär dig varför svaret
+                är rätt. Det är helt okej att göra misstag längs vägen!
+              </p>
+            </div>
 
-    <div className="relative hidden h-32 w-32 shrink-0 items-center justify-center sm:flex sm:h-40 sm:w-40 md:h-48 md:w-48">
-      <Image
-        src="/images/en-eller-ett-icon.png"
-        alt=""
-        width={192}
-        height={192}
-        priority
-        className="h-full w-full object-contain"
-      />
-    </div>
-  </div>
+            <div className="relative hidden h-32 w-32 shrink-0 items-center justify-center sm:flex sm:h-40 sm:w-40 md:h-48 md:w-48">
+              <Image
+                src="/images/en-eller-ett-icon.png"
+                alt=""
+                width={192}
+                height={192}
+                priority
+                className="h-full w-full object-contain"
+              />
+            </div>
+          </div>
 
-  <div className="relative z-10 mt-6 flex flex-wrap gap-3 text-sm font-medium text-[#795b57]">
-    <span className="rounded-full border border-white/80 bg-white/65 px-3 py-2">
-      {enEttQuestions.length} frågor
-    </span>
-    <span className="rounded-full border border-white/80 bg-white/65 px-3 py-2">
-      Direkt feedback
-    </span>
-    <span className="rounded-full border border-white/80 bg-white/65 px-3 py-2">
-      Förklaringar ingår
-    </span>
-  </div>
-</section>
+          <div className="relative z-10 mt-6 flex flex-wrap gap-3 text-sm font-medium text-[#795b57]">
+            <span className="rounded-full border border-white/80 bg-white/65 px-3 py-2">
+              {questions.length} frågor
+            </span>
+            <span className="rounded-full border border-white/80 bg-white/65 px-3 py-2">
+              Direkt feedback
+            </span>
+            <span className="rounded-full border border-white/80 bg-white/65 px-3 py-2">
+              Förklaringar ingår
+            </span>
+          </div>
+        </section>
 
         <section className="rounded-3xl border border-[#e1e9eb] bg-white p-5 shadow-[0_12px_40px_rgba(30,70,75,0.05)] sm:p-8">
           {!finished ? (
@@ -134,7 +275,7 @@ export default function EnEllerEttPage() {
               <div className="mb-7">
                 <div className="mb-3 flex items-center justify-between gap-4 text-sm">
                   <span className="font-bold text-[#42656b]">
-                    Fråga {questionIndex + 1} av {enEttQuestions.length}
+                    Fråga {questionIndex + 1} av {questions.length}
                   </span>
                   <span className="font-semibold text-[#6c8589]">
                     {score} rätt hittills
@@ -196,6 +337,7 @@ export default function EnEllerEttPage() {
                       className={`min-h-24 rounded-2xl border-2 p-5 text-2xl font-extrabold transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17665d] disabled:cursor-default sm:min-h-28 sm:text-3xl ${buttonStyle}`}
                     >
                       {article}
+
                       {answered && isRightAnswer && (
                         <CheckCircle2
                           className="mx-auto mt-2"
@@ -203,6 +345,7 @@ export default function EnEllerEttPage() {
                           aria-label="Rätt svar"
                         />
                       )}
+
                       {answered && isSelected && !isRightAnswer && (
                         <XCircle
                           className="mx-auto mt-2"
@@ -240,9 +383,29 @@ export default function EnEllerEttPage() {
                     </span>
 
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-extrabold">
-                        {isCorrect ? "Snyggt jobbat!" : "Bra att du övar!"}
-                      </h3>
+                      {/* Header: feedback title on the left, save button on the right */}
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <h3 className="font-extrabold">
+                          {isCorrect ? "Snyggt jobbat!" : "Bra att du övar!"}
+                        </h3>
+
+                        {isCorrect && (
+                          <button
+                            type="button"
+                            onClick={handleToggleTrickyWord}
+                            aria-pressed={isWordSaved}
+                            className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 self-start rounded-full border border-[#cbdedd] bg-white/80 px-4 py-2 text-sm font-bold text-[#285b5b] transition hover:bg-[#f0f8f4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17665d] sm:ml-4"
+                          >
+                            <Star
+                              size={16}
+                              className={isWordSaved ? "fill-current" : ""}
+                            />
+                            {isWordSaved
+                              ? "Sparat – ta bort"
+                              : "Spara som klurigt ord"}
+                          </button>
+                        )}
+                      </div>
 
                       <p className="mt-1 text-sm leading-6 text-[#49676a]">
                         Rätt svar är{" "}
@@ -264,7 +427,7 @@ export default function EnEllerEttPage() {
                       {!isCorrect && (
                         <p className="mt-3 flex items-center gap-2 text-xs font-semibold text-[#8b5a43]">
                           <Star size={14} />
-                          Vi sparar ordet så att du kan träna på det igen.
+                          Ordet har sparats automatiskt under Mina kluriga ord.
                         </p>
                       )}
                     </div>
@@ -275,7 +438,7 @@ export default function EnEllerEttPage() {
                     onClick={handleNext}
                     className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#17665d] px-5 py-3 font-bold text-white shadow-sm transition hover:bg-[#104f49] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17665d] sm:w-auto"
                   >
-                    {questionIndex === enEttQuestions.length - 1
+                    {questionIndex === questions.length - 1
                       ? "Se resultat"
                       : "Nästa fråga"}
                     <ArrowRight size={18} />
@@ -307,10 +470,10 @@ export default function EnEllerEttPage() {
                   Dina resultat
                 </p>
                 <p className="mt-2 text-5xl font-extrabold text-[#17665d]">
-                  {score} / {enEttQuestions.length}
+                  {score} / {questions.length}
                 </p>
                 <p className="mt-2 text-sm text-[#617c81]">
-                  rätt svar · {Math.round((score / enEttQuestions.length) * 100)}%
+                  rätt svar · {Math.round((score / questions.length) * 100)}%
                 </p>
               </div>
 
@@ -325,9 +488,9 @@ export default function EnEllerEttPage() {
                 </button>
 
                 <Link
-                href="/"
-                onClick={handleRestart}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#cbdedd] bg-white px-6 py-3 font-bold text-[#285b5b] transition hover:bg-[#f4f9f7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17665d]"
+                  href="/"
+                  onClick={handleRestart}
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#cbdedd] bg-white px-6 py-3 font-bold text-[#285b5b] transition hover:bg-[#f4f9f7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17665d]"
                 >
                   Till startsidan
                   <ArrowRight size={17} />
@@ -336,7 +499,6 @@ export default function EnEllerEttPage() {
             </div>
           )}
         </section>
-
       </div>
     </main>
   );

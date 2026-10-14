@@ -1,19 +1,9 @@
 "use client";
 import Header from "@/app/components/layout/Header";
 import Footer from "@/app/components/layout/Footer";
-import {
-  useEffect,
-  useState,
-  useSyncExternalStore,
-} from "react";
-import {
-  getDailyWord
-} from "@/app/data/dailyword";
-import {
-  getActivity,
-  getCurrentStreak,
-  getProgress,
-} from "@/app/lib/progress";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { getDailyWord } from "@/app/data/dailyword";
+import { getActivity, getCurrentStreak, getProgress } from "@/app/lib/progress";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -26,7 +16,6 @@ import {
   Target,
   Timer,
 } from "lucide-react";
-
 
 const learningAreas = [
   {
@@ -54,7 +43,7 @@ const learningAreas = [
     progress: 0,
     color: "purple",
     image: "/images/stavning-icon.png",
-    href: "#snabbsparet",
+    href: "/exercises/stavningsjakten",
   },
   {
     title: "Meningsbyggnad",
@@ -66,7 +55,6 @@ const learningAreas = [
     href: "#snabbsparet",
   },
 ];
-
 
 const cardColors = {
   mint: {
@@ -103,7 +91,6 @@ function getDateKey(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-
 function getLastSevenDays(today: Date) {
   const days = ["Sö", "Må", "Ti", "On", "To", "Fr", "Lö"];
 
@@ -118,13 +105,14 @@ function getLastSevenDays(today: Date) {
   });
 }
 
-
 export default function Home() {
   const [activeDates, setActiveDates] = useState<string[]>([]);
   const [answered, setAnswered] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [lastSevenDays, setLastSevenDays] = useState<{ label: string; dateKey: string }[]>([]);
+  const [lastSevenDays, setLastSevenDays] = useState<
+    { label: string; dateKey: string }[]
+  >([]);
 
   useEffect(() => {
     function updateStats() {
@@ -138,32 +126,25 @@ export default function Home() {
     }
 
     updateStats();
-    
-    window.addEventListener(
-      "svenskasparet-progress-updated",
-      updateStats,
-    );
+
+    window.addEventListener("svenskasparet-progress-updated", updateStats);
 
     window.addEventListener("storage", updateStats);
 
     return () => {
-      window.removeEventListener(
-        "svenskasparet-progress-updated",
-        updateStats,
-      );
+      window.removeEventListener("svenskasparet-progress-updated", updateStats);
 
       window.removeEventListener("storage", updateStats);
     };
   }, []);
 
-  const accuracy =
-    answered > 0 ? Math.round((correct / answered) * 100) : 0;
+  const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
 
-const dailyWord = useSyncExternalStore(
-  () => () => {},
-  getDailyWord,
-  () => null,
-);
+  const dailyWord = useSyncExternalStore(
+    () => () => {},
+    getDailyWord,
+    () => null,
+  );
 
   return (
     <main className="min-h-screen bg-[radial-gradient(ellipse_at_8%_20%,rgba(224,239,244,0.38),transparent_38%),#f3f7f9] text-[#153e43]">
@@ -171,7 +152,10 @@ const dailyWord = useSyncExternalStore(
 
       <Header streak={streak} />
 
-      <div id="hem" className="mx-auto w-full max-w-[1450px] px-4 sm:px-6 lg:px-8">
+      <div
+        id="hem"
+        className="mx-auto w-full max-w-[1450px] px-4 sm:px-6 lg:px-8"
+      >
         {/* Välkomstsektion */}
         <section className="relative isolate mt-4 flex min-h-[300px] overflow-hidden rounded-[24px] border border-white/70 bg-gradient-to-r from-[#e3efeb] via-[#e8f0ee] to-[#d4eaf0] sm:min-h-[320px]">
           <div className="relative z-10 flex w-full items-center px-5 py-8 sm:w-[65%] sm:px-9 sm:py-10 lg:w-[58%] lg:px-11">
@@ -181,7 +165,7 @@ const dailyWord = useSyncExternalStore(
                 VÄLKOMMEN TILL SVENSKASPÅRET
               </div>
               <h1 className="mb-2 text-4xl font-extrabold leading-tight tracking-[-0.05em] text-[#143f43] sm:text-5xl lg:text-6xl">
-                Hej Anna!
+                Hejsan!
               </h1>
               <p className="max-w-md text-sm leading-relaxed text-[#28545c] sm:text-lg">
                 Ett steg i taget, och du kommer att lära dig svenska!
@@ -217,50 +201,45 @@ const dailyWord = useSyncExternalStore(
             <div className="absolute inset-0 bg-gradient-to-r from-[#e6efec] via-[#e6efec]/70 to-transparent sm:from-[#e6efec] sm:via-[#e6efec]/25 sm:to-transparent" />
           </div>
 
-          
           {/* Dagens ord */}
           {dailyWord && (
-          <article className="absolute bottom-4 right-4 z-10 hidden w-64 rounded-[1.35rem] border border-white/80 bg-white/95 p-5 shadow-xl shadow-[#254b4d]/10 backdrop-blur-sm lg:block xl:right-6 xl:bottom-6">
-            <div className="mb-3 flex items-center gap-3">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f5efdc] text-[#285d52]">
-                <Sprout size={17} />
-              </span>
-              <span className="text-sm font-extrabold tracking-tight text-[#234b4b]">
-                Dagens ord
-              </span>
-            </div>
-      
-            
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="min-w-0 text-[1.7rem] font-extrabold leading-tight tracking-tight text-[#183f47]">
-                {dailyWord.word}
-              </h2>
+            <article className="absolute bottom-4 right-4 z-10 hidden w-64 rounded-[1.35rem] border border-white/80 bg-white/95 p-5 shadow-xl shadow-[#254b4d]/10 backdrop-blur-sm lg:block xl:right-6 xl:bottom-6">
+              <div className="mb-3 flex items-center gap-3">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f5efdc] text-[#285d52]">
+                  <Sprout size={17} />
+                </span>
+                <span className="text-sm font-extrabold tracking-tight text-[#234b4b]">
+                  Dagens ord
+                </span>
+              </div>
 
-              <span
-                aria-hidden="true"
-                className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#edf5ef] text-2xl"
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="min-w-0 text-[1.7rem] font-extrabold leading-tight tracking-tight text-[#183f47]">
+                  {dailyWord.word}
+                </h2>
+
+                <span
+                  aria-hidden="true"
+                  className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#edf5ef] text-2xl"
+                >
+                  {dailyWord.emoji}
+                </span>
+              </div>
+
+              <p className="mt-1 text-sm leading-relaxed text-[#54727b]">
+                {dailyWord.description}
+              </p>
+
+              <Link
+                href={dailyWord.exerciseLink}
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#e0eee8] px-4 py-2 text-xs font-extrabold text-[#17665d] transition-colors hover:bg-[#d1e6dd]"
               >
-                {dailyWord.emoji}
-              </span>
-            </div>
-
-
-            <p className="mt-1 text-sm leading-relaxed text-[#54727b]">
-              {dailyWord.description}
-            </p>
-
-            <Link
-              href={dailyWord.exerciseLink}
-              className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#e0eee8] px-4 py-2 text-xs font-extrabold text-[#17665d] transition-colors hover:bg-[#d1e6dd]"
-            >
-              {dailyWord.exerciseTitle}
-              <ChevronRight size={15} />
-            </Link>
+                {dailyWord.exerciseTitle}
+                <ChevronRight size={15} />
+              </Link>
             </article>
-            )}
+          )}
         </section>
-
-
 
         {/* Övningsområden */}
         <section id="ovningar" className="py-9 sm:py-11">
@@ -292,17 +271,15 @@ const dailyWord = useSyncExternalStore(
                   className={`group flex min-h-[230px] flex-col rounded-2xl border p-5 transition duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#2a494f]/10 sm:p-6 ${colors.card}`}
                 >
                   <div className="flex items-start justify-between">
-                    
-                    <div className="flex h-24 w-28 items-center justify-start sm:h-28 sm:w-32">
+                    <div className="flex h-32 w-36 items-center justify-start sm:h-36 sm:w-40">
                       <Image
                         src={area.image}
                         alt=""
-                        width={128}
-                        height={128}
+                        width={160}
+                        height={160}
                         className="h-full w-full object-contain transition-transform duration-200 group-hover:scale-105"
                       />
                     </div>
-
 
                     <span
                       className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 bg-white/50 transition group-hover:translate-x-0.5 ${colors.arrow}`}
@@ -311,15 +288,18 @@ const dailyWord = useSyncExternalStore(
                     </span>
                   </div>
 
-                  <h3 className="mt-5 text-base font-extrabold tracking-tight text-[#183f47]">
+                  <h3 className="mt-4 text-lg font-extrabold tracking-tight text-[#183f47]">
                     {area.title}
                   </h3>
-                  <p className="mt-1.5 min-h-10 text-xs leading-relaxed text-[#54727b]">
+
+                  <p className="mt-2 min-h-10 text-sm leading-relaxed text-[#54727b]">
                     {area.description}
                   </p>
 
                   <div className="mt-auto flex items-center gap-2.5 pt-4">
-                    <span className={`shrink-0 rounded-full px-3 py-2 text-[10px] font-extrabold ${colors.pill}`}>
+                    <span
+                      className={`shrink-0 rounded-full px-3 py-2 text-xs font-extrabold ${colors.pill}`}
+                    >
                       {area.level}
                     </span>
                     <div
@@ -350,24 +330,26 @@ const dailyWord = useSyncExternalStore(
           <article
             id="snabbsparet"
             className="flex flex-col gap-5 rounded-[22px] border border-[#d4e6df] bg-gradient-to-br from-[#e8f4ef] to-[#e0efeb] p-5 sm:flex-row sm:items-center sm:p-7"
-          >         
-            <div className="flex h-28 w-28 shrink-0 items-center justify-center sm:h-36 sm:w-36">
+          >
+            <div className="flex h-32 w-32 shrink-0 items-center justify-center sm:h-40 sm:w-40">
               <Image
                 src="/images/snabbsparet-icon.png"
                 alt="Snabbspåret"
-                width={144}
-                height={144}
+                width={160}
+                height={160}
                 className="h-full w-full object-contain"
-                />
+              />
             </div>
 
             <div className="min-w-0 flex-1">
-              <h2 className="text-xl font-extrabold text-[#183f47] sm:text-2xl">
+              <h2 className="text-2xl font-extrabold text-[#183f47] sm:text-3xl">
                 Snabbspåret
               </h2>
-              <p className="mt-1 text-sm text-[#54727b]">
+
+              <p className="mt-1 text-base leading-relaxed text-[#54727b]">
                 Hur många frågor klarar du på 60 sekunder?
               </p>
+
               <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-[#42676a]">
                 <span className="inline-flex items-center gap-1.5">
                   <Timer size={15} /> 60 sekunder
@@ -390,29 +372,46 @@ const dailyWord = useSyncExternalStore(
 
           <article
             id="kluriga-ord"
-            className="flex items-center gap-4 rounded-[22px] border border-[#e3dcf3] bg-gradient-to-br from-[#f5f1fd] to-[#efedf8] p-5 sm:gap-5 sm:p-7"
+            className="flex items-center gap-3 rounded-[22px] border border-[#e3dcf3] bg-gradient-to-br from-[#f5f1fd] to-[#efedf8] p-4 sm:gap-5 sm:p-6"
           >
-            <div className="flex h-28 w-28 shrink-0 items-center justify-center sm:h-36 sm:w-36">
+            {/* Lightbulb on the left */}
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center sm:h-28 sm:w-28">
               <Image
-                src="/images/kluriga-ord-icon.png"
+                src="/images/kluriga-ord-icon-lightbulb.png"
                 alt=""
-                width={144}
-                height={144}
+                width={112}
+                height={112}
                 className="h-full w-full object-contain"
-              />        
+              />
             </div>
+            {/* Text in the middle */}
             <div className="min-w-0 flex-1">
-              <h2 className="text-xl font-extrabold text-[#183f47]">
+              <h2 className="text-lg font-extrabold text-[#183f47] sm:text-xl">
                 Mina kluriga ord
               </h2>
+
               <p className="mt-2 text-sm leading-relaxed text-[#54727b]">
                 Samla ord du vill öva mer på och kom tillbaka till dem senare.
               </p>
+            </div>
+            {/* Flashcards above the button on the right */}
+            <div className="flex w-32 shrink-0 flex-col items-center gap-2 sm:w-48 sm:gap-3">
+              <div className="relative h-20 w-full sm:h-28">
+                <Image
+                  src="/images/kluriga-ord-flashcards-icon.png"
+                  alt="Ord på kort med ett äpple"
+                  fill
+                  sizes="(max-width: 640px) 128px, 192px"
+                  className="object-contain scale-125"
+                />
+              </div>
+
               <Link
                 href="/exercises/kluriga-ord"
-                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-full border border-[#b9addb] bg-white/50 px-4 text-xs font-bold text-[#5f4d89] transition hover:bg-white"
+                className="inline-flex min-h-10 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-[#b9addb] bg-white/50 px-3 text-xs font-bold text-[#5f4d89] transition hover:bg-white sm:gap-2 sm:px-4 sm:text-sm"
               >
-                Träna på ord <ChevronRight size={16} />
+                Träna på ord
+                <ChevronRight size={14} />
               </Link>
             </div>
           </article>
@@ -443,7 +442,10 @@ const dailyWord = useSyncExternalStore(
               {answered}
             </strong>
             <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#e7efec]">
-              <div className="h-full rounded-full bg-[#5ca18b]" style={{ width: `${Math.min(answered, 100)}%` }} />
+              <div
+                className="h-full rounded-full bg-[#5ca18b]"
+                style={{ width: `${Math.min(answered, 100)}%` }}
+              />
             </div>
           </div>
 
@@ -455,7 +457,10 @@ const dailyWord = useSyncExternalStore(
               {accuracy}%
             </strong>
             <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#e7efec]">
-              <div  className="h-full rounded-full bg-[#5ca18b]" style={{ width: `${accuracy}%` }}/>
+              <div
+                className="h-full rounded-full bg-[#5ca18b]"
+                style={{ width: `${accuracy}%` }}
+              />
             </div>
           </div>
 
@@ -464,19 +469,18 @@ const dailyWord = useSyncExternalStore(
               <Flame size={16} className="text-[#f47c43]" /> Streak
             </p>
             <strong className="mt-2 flex items-center gap-2 text-2xl font-extrabold text-[#183f47]">
-              <Flame size={19} className="fill-[#ffd1a6] text-[#f47c43]" />{streak} {streak === 1 ? "dag" : "dagar"}
+              <Flame size={19} className="fill-[#ffd1a6] text-[#f47c43]" />
+              {streak} {streak === 1 ? "dag" : "dagar"}
             </strong>
             <div className="mt-3 flex gap-1.5" aria-label="Tre dagar i rad">
               {[1, 2, 3, 4, 5].map((day) => (
                 <span
-                 key={day}
-                 className={`h-2 w-5 rounded-full ${
-                  day <= Math.min(streak, 5)
-                  ? "bg-[#70b39a]"
-                  : "bg-[#e5ece9]"
-                }`}
+                  key={day}
+                  className={`h-2 w-5 rounded-full ${
+                    day <= Math.min(streak, 5) ? "bg-[#70b39a]" : "bg-[#e5ece9]"
+                  }`}
                 />
-                ))}
+              ))}
             </div>
           </div>
 
@@ -488,26 +492,26 @@ const dailyWord = useSyncExternalStore(
               {lastSevenDays.map((day) => {
                 const practiced = activeDates.includes(day.dateKey);
                 return (
-                <div
-                key={day.dateKey}
-                className="flex flex-col items-center gap-2"
-                title={
-                  practiced
-                  ? `Du övade ${day.dateKey}`
-                  : `Ingen registrerad träning ${day.dateKey}`
-                }
-                >
-                  <span
-                  className={`h-5 w-5 rounded-md ${
-                    practiced ? "bg-[#70b39a]" : "bg-[#e5ece9]"
-                    }`}
+                  <div
+                    key={day.dateKey}
+                    className="flex flex-col items-center gap-2"
+                    title={
+                      practiced
+                        ? `Du övade ${day.dateKey}`
+                        : `Ingen registrerad träning ${day.dateKey}`
+                    }
+                  >
+                    <span
+                      className={`h-5 w-5 rounded-md ${
+                        practiced ? "bg-[#70b39a]" : "bg-[#e5ece9]"
+                      }`}
                     />
                     <span className="text-[10px] text-[#54727b]">
                       {day.label}
                     </span>
                   </div>
-                  );
-                })}
+                );
+              })}
             </div>
           </div>
         </section>

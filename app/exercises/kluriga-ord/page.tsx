@@ -1,109 +1,100 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  BookOpen,
-  CheckCircle2,
-  RotateCcw,
-  Sparkles,
-  XCircle,
-} from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
 
-import { enEttQuestions, type Article } from "@/app/data/enEtt";
+import {
+  getTrickyWords,
+  removeTrickyWord,
+  TRICKY_WORDS_EVENT,
+  type TrickyWord,
+} from "@/app/lib/trickyWords";
 import { recordAnswer } from "@/app/lib/progress";
 
-const TRICKY_WORDS_KEY = "svenskasparet-tricky-words";
+function exerciseLabel(exercise: TrickyWord["exercise"]) {
+  switch (exercise) {
+    case "en-eller-ett":
+      return "En eller ett?";
+    case "snabbspåret":
+      return "Snabbspåret";
+    case "stavningsjakten":
+      return "Stavningsjakten";
+    default:
+      return exercise;
+  }
+}
 
-type Question = (typeof enEttQuestions)[number];
+function sameWord(a: TrickyWord, b: TrickyWord) {
+  return a.id === b.id && a.exercise === b.exercise;
+}
+
+function normalizeAnswer(value: string) {
+  return value.trim().toLocaleLowerCase("sv-SE");
+}
 
 export default function KlurigaOrdPage() {
-  const [trickyWords, setTrickyWords] = useState<string[] | null>(null);
+  const [trickyWords, setTrickyWords] = useState<TrickyWord[] | null>(null);
   const [practiceMode, setPracticeMode] = useState(false);
-  const [currentWord, setCurrentWord] = useState<Question | null>(null);
-  const [selectedAnswer, setSelectedAnswer] = useState<Article | null>(null);
+  const [currentWord, setCurrentWord] = useState<TrickyWord | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [typedAnswer, setTypedAnswer] = useState("");
   const [correctCount, setCorrectCount] = useState(0);
   const [sessionCount, setSessionCount] = useState(0);
 
-  const currentQuestion = currentWord;
   const answered = selectedAnswer !== null;
   const isCorrect =
-    selectedAnswer === currentQuestion?.correctArticle;
+    currentWord !== null &&
+    selectedAnswer !== null &&
+    normalizeAnswer(selectedAnswer) === normalizeAnswer(currentWord.answer);
 
-  // Läs ordlistan när sidan har laddats i webbläsaren.
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const saved = localStorage.getItem(TRICKY_WORDS_KEY);
-        const parsed: unknown = saved ? JSON.parse(saved) : [];
+    function loadTrickyWords() {
+      setTrickyWords(getTrickyWords());
+    }
 
-        const words: string[] = Array.isArray(parsed)
-          ? parsed.filter(
-              (word): word is string => typeof word === "string",
-            )
-          : [];
+    loadTrickyWords();
 
-        setTrickyWords(
-          Array.from(new Set(words)).filter((word) =>
-            enEttQuestions.some((question) => question.word === word),
-          ),
-        );
-      } catch {
-        setTrickyWords([]);
-      }
-    }, 0);
+    window.addEventListener(TRICKY_WORDS_EVENT, loadTrickyWords);
+    window.addEventListener("storage", loadTrickyWords);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.removeEventListener(TRICKY_WORDS_EVENT, loadTrickyWords);
+      window.removeEventListener("storage", loadTrickyWords);
+    };
   }, []);
 
-  const availableQuestions =
-    trickyWords?.length
-      ? enEttQuestions.filter((question) =>
-          trickyWords.includes(question.word),
-        )
-      : [];
-
-  function saveTrickyWords(words: string[]) {
+  function chooseNextWord(exclude?: TrickyWord) {
+    const words = getTrickyWords();
     setTrickyWords(words);
 
-    try {
-      localStorage.setItem(TRICKY_WORDS_KEY, JSON.stringify(words));
-    } catch {
-      // Sidan kan fortfarande användas även om lagringen misslyckas.
+    const remaining = exclude
+      ? words.filter((word) => !sameWord(word, exclude))
+      : words;
+
+    const choices = remaining.length > 0 ? remaining : words;
+
+    if (choices.length === 0) {
+      setCurrentWord(null);
+      setPracticeMode(false);
+      return;
     }
+
+    const randomValues = new Uint32Array(1);
+    window.crypto.getRandomValues(randomValues);
+    const next = choices[randomValues[0] % choices.length];
+
+    setCurrentWord(next);
+    setSelectedAnswer(null);
+    setTypedAnswer("");
   }
-
- 
-function chooseNextWord(excludeWord?: string) {
-  const remaining = availableQuestions.filter(
-    (question) => question.word !== excludeWord,
-  );
-
-  const choices =
-    remaining.length > 0 ? remaining : availableQuestions;
-
-  if (choices.length === 0) {
-    setCurrentWord(null);
-    setPracticeMode(false);
-    return;
-  }
-
-  // Använd ett slumpat index från Web Crypto i stället för Math.random().
-  const randomValues = new Uint32Array(1);
-  window.crypto.getRandomValues(randomValues);
-
-  const randomIndex = randomValues[0] % choices.length;
-  const next = choices[randomIndex];
-
-  setCurrentWord(next);
-  setSelectedAnswer(null);
-}
-
 
   function startPractice() {
-    if (availableQuestions.length === 0) return;
+    const words = getTrickyWords();
+    setTrickyWords(words);
+
+    if (words.length === 0) return;
 
     setCorrectCount(0);
     setSessionCount(0);
@@ -111,42 +102,52 @@ function chooseNextWord(excludeWord?: string) {
     chooseNextWord();
   }
 
-  function handleAnswer(answer: Article) {
-    if (!currentQuestion || answered) return;
+  function handleAnswer(answer: string) {
+    if (!currentWord || answered) return;
 
-    const correct = answer === currentQuestion.correctArticle;
+    const correct =
+      normalizeAnswer(answer) === normalizeAnswer(currentWord.answer);
 
     setSelectedAnswer(answer);
     setSessionCount((count) => count + 1);
 
     if (correct) {
       setCorrectCount((count) => count + 1);
-      saveTrickyWords(
-        (trickyWords ?? []).filter(
-          (word) => word !== currentQuestion.word,
-        ),
+      removeTrickyWord(currentWord.id, currentWord.exercise);
+
+      setTrickyWords((previous) =>
+        (previous ?? []).filter((word) => !sameWord(word, currentWord)),
       );
     }
 
     recordAnswer(correct);
   }
 
-  function continuePractice() {
-    if (!currentQuestion || !answered) return;
+  function submitTypedAnswer(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!typedAnswer.trim()) return;
+    handleAnswer(typedAnswer);
+  }
 
-    if (trickyWords && trickyWords.length === 0) {
-      setPracticeMode(false);
+  function continuePractice() {
+    if (!currentWord || !answered) return;
+
+    const remaining = getTrickyWords();
+    setTrickyWords(remaining);
+
+    if (remaining.length === 0) {
       setCurrentWord(null);
       return;
     }
 
-    chooseNextWord(currentQuestion.word);
+    chooseNextWord(currentWord);
   }
 
   function stopPractice() {
     setPracticeMode(false);
     setCurrentWord(null);
     setSelectedAnswer(null);
+    setTypedAnswer("");
   }
 
   if (trickyWords === null) {
@@ -159,16 +160,35 @@ function chooseNextWord(excludeWord?: string) {
     );
   }
 
+  const options =
+    currentWord?.options && currentWord.options.length > 0
+      ? currentWord.options
+      : currentWord?.mode === "article"
+        ? ["en", "ett"]
+        : [];
+
+  const useChoiceButtons =
+    currentWord !== null &&
+    (currentWord.mode === "article" ||
+      (currentWord.mode === "choice" && options.length > 0));
+
   return (
     <main className="min-h-screen bg-[#f3f7f9] px-4 py-6 text-[#173f45] sm:px-6 sm:py-10">
       <div className="mx-auto max-w-3xl">
-
         <section className="rounded-3xl border border-white bg-white p-6 shadow-sm sm:p-9">
           {!practiceMode ? (
             <>
-              <div className="mb-6 flex items-start gap-4">
-                <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-[#fff0e9] text-[#bd6248]">
-                  <Sparkles size={28} />
+              <div className="mb-6 flex items-center gap-4 sm:gap-5">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center sm:h-24 sm:w-24 md:h-28 md:w-28">
+                  <Image
+                    src="/images/kluriga-ord-icon-lightbulb.png"
+                    alt="Ikon för kluriga ord"
+                    width={460}
+                    height={460}
+                    priority
+                    className="h-full w-full object-contain"
+                    sizes="(max-width: 639px) 80px, (max-width: 767px) 96px, 112px"
+                  />
                 </div>
 
                 <div>
@@ -176,8 +196,8 @@ function chooseNextWord(excludeWord?: string) {
                     Mina kluriga ord
                   </h1>
                   <p className="mt-2 leading-7 text-[#496c72]">
-                    Här samlas orden du har svarat fel på. Öva på dem
-                    igen och rensa listan allt eftersom du blir säkrare.
+                    Här samlas orden du har svarat fel på. Öva på dem igen och
+                    rensa listan allt eftersom du blir säkrare.
                   </p>
                 </div>
               </div>
@@ -187,11 +207,11 @@ function chooseNextWord(excludeWord?: string) {
                   Ord att öva på
                 </p>
                 <p className="mt-1 text-4xl font-extrabold text-[#17665d]">
-                  {availableQuestions.length}
+                  {trickyWords.length}
                 </p>
               </div>
 
-              {availableQuestions.length === 0 ? (
+              {trickyWords.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-[#bcd9ce] px-5 py-10 text-center">
                   <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-[#e5f5ec] text-[#17665d]">
                     <CheckCircle2 size={28} />
@@ -200,9 +220,8 @@ function chooseNextWord(excludeWord?: string) {
                     Inga kluriga ord just nu!
                   </h2>
                   <p className="mx-auto mt-2 max-w-md leading-7 text-[#496c72]">
-                    När du svarar fel på ett ord i En eller ett? eller
-                    Snabbspåret hamnar det här. Kom tillbaka när du har
-                    några ord att träna på.
+                    När du svarar fel i en övning sparas frågan här så att du
+                    kan träna på den igen.
                   </p>
                   <Link
                     href="/exercises/en-eller-ett"
@@ -214,22 +233,43 @@ function chooseNextWord(excludeWord?: string) {
               ) : (
                 <>
                   <div className="mb-6 space-y-3">
-                    {availableQuestions.map((question) => (
+                    {trickyWords.map((word) => (
                       <div
-                        key={question.id}
-                        className="flex items-center justify-between gap-4 rounded-2xl border border-[#e0eae7] p-4"
+                        key={`${word.exercise}-${word.id}`}
+                        className="flex items-start justify-between gap-4 rounded-2xl border border-[#e0eae7] p-4"
                       >
                         <div>
-                          <p className="text-lg font-bold">
-                            {question.correctArticle} {question.word}
+                          <p className="text-lg font-bold">{word.word}</p>
+                          <p className="mt-1 text-xs font-semibold text-[#17665d]">
+                            {exerciseLabel(word.exercise)}
+                          </p>
+                          <p className="mt-2 text-sm leading-6 text-[#648083]">
+                            {word.prompt}
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-[#496c72]">
+                            Rätt svar:{" "}
+                            <span className="font-semibold">{word.answer}</span>
                           </p>
                           <p className="mt-1 text-sm leading-6 text-[#648083]">
-                            {question.explanation}
+                            {word.explanation}
                           </p>
-                          <p className="mt-1 text-sm italic text-[#496c72]">
-                            {question.example}
-                          </p>
+                          {word.example && (
+                            <p className="mt-1 text-sm italic text-[#496c72]">
+                              {word.example}
+                            </p>
+                          )}
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removeTrickyWord(word.id, word.exercise)
+                          }
+                          className="shrink-0 rounded-full px-3 py-2 text-sm font-semibold text-[#648083] transition hover:bg-[#f0f6f4]"
+                          aria-label={`Ta bort ${word.word} från listan`}
+                        >
+                          Ta bort
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -266,57 +306,87 @@ function chooseNextWord(excludeWord?: string) {
                 </button>
               </div>
 
-              {currentQuestion ? (
+              {currentWord ? (
                 <>
+                  <p className="mb-2 text-sm font-semibold text-[#648083]">
+                    {exerciseLabel(currentWord.exercise)}
+                  </p>
                   <h2 className="text-2xl font-extrabold">
-                    Vilket passar?
+                    {currentWord.prompt}
                   </h2>
 
                   <div className="my-7 rounded-2xl bg-[#f0f6f4] px-5 py-10 text-center">
-                    <p className="text-4xl font-extrabold">
-                      {currentQuestion.word}
+                    <p className="text-3xl font-extrabold">
+                      {currentWord.word}
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    {(["en", "ett"] as Article[]).map((article) => {
-                      const chosen = selectedAnswer === article;
-                      const correctChoice =
-                        currentQuestion.correctArticle === article;
+                  {useChoiceButtons ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      {options.map((option) => {
+                        const chosen = selectedAnswer === option;
+                        const correctChoice =
+                          normalizeAnswer(option) ===
+                          normalizeAnswer(currentWord.answer);
 
-                      let style =
-                        "border-[#d7e5e3] bg-white hover:border-[#58a995]";
+                        let style =
+                          "border-[#d7e5e3] bg-white hover:border-[#58a995]";
 
-                      if (answered && correctChoice) {
-                        style =
-                          "border-[#58a995] bg-[#e5f5ec] text-[#17665d]";
-                      } else if (chosen && !isCorrect) {
-                        style =
-                          "border-[#e7a18d] bg-[#fff0e9] text-[#a94732]";
-                      }
+                        if (answered && correctChoice) {
+                          style =
+                            "border-[#58a995] bg-[#e5f5ec] text-[#17665d]";
+                        } else if (chosen && !isCorrect) {
+                          style =
+                            "border-[#e7a18d] bg-[#fff0e9] text-[#a94732]";
+                        }
 
-                      return (
+                        return (
+                          <button
+                            key={option}
+                            type="button"
+                            disabled={answered}
+                            onClick={() => handleAnswer(option)}
+                            className={`min-h-16 rounded-2xl border-2 px-4 py-4 text-lg font-extrabold transition disabled:cursor-default ${style}`}
+                          >
+                            {option}
+                            {answered && correctChoice && (
+                              <CheckCircle2 className="ml-2 inline" size={20} />
+                            )}
+                            {chosen && !isCorrect && (
+                              <XCircle className="ml-2 inline" size={20} />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <form onSubmit={submitTypedAnswer} className="space-y-3">
+                      <label
+                        htmlFor="typed-answer"
+                        className="block text-sm font-semibold text-[#496c72]"
+                      >
+                        Skriv ditt svar
+                      </label>
+                      <input
+                        id="typed-answer"
+                        value={typedAnswer}
+                        onChange={(event) => setTypedAnswer(event.target.value)}
+                        disabled={answered}
+                        autoComplete="off"
+                        className="min-h-12 w-full rounded-2xl border border-[#d7e5e3] px-4 py-3 outline-none focus:border-[#58a995]"
+                        placeholder="Ditt svar..."
+                      />
+                      {!answered && (
                         <button
-                          key={article}
-                          type="button"
-                          disabled={answered}
-                          onClick={() => handleAnswer(article)}
-                          className={`min-h-20 rounded-2xl border-2 px-4 py-5 text-2xl font-extrabold transition disabled:cursor-default ${style}`}
+                          type="submit"
+                          disabled={!typedAnswer.trim()}
+                          className="min-h-12 w-full rounded-full bg-[#17665d] px-6 py-3 font-bold text-white transition hover:bg-[#124e48] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {article}
-                          {answered && correctChoice && (
-                            <CheckCircle2
-                              className="ml-2 inline"
-                              size={20}
-                            />
-                          )}
-                          {chosen && !isCorrect && (
-                            <XCircle className="ml-2 inline" size={20} />
-                          )}
+                          Kontrollera svar
                         </button>
-                      );
-                    })}
-                  </div>
+                      )}
+                    </form>
+                  )}
 
                   {answered && (
                     <div
@@ -328,14 +398,23 @@ function chooseNextWord(excludeWord?: string) {
                       aria-live="polite"
                     >
                       <p className="font-bold">
-                        {isCorrect ? "Rätt! Ordet är avklarat! 🎉" : "Inte riktigt!"}
+                        {isCorrect
+                          ? "Rätt! Ordet är avklarat! 🎉"
+                          : "Inte riktigt!"}
                       </p>
                       <p className="mt-1 text-sm leading-6">
-                        {currentQuestion.explanation}
+                        {currentWord.explanation}
                       </p>
-                      <p className="mt-2 text-sm italic">
-                        {currentQuestion.example}
-                      </p>
+                      {!isCorrect && (
+                        <p className="mt-2 text-sm font-semibold">
+                          Rätt svar: {currentWord.answer}
+                        </p>
+                      )}
+                      {currentWord.example && (
+                        <p className="mt-2 text-sm italic">
+                          {currentWord.example}
+                        </p>
+                      )}
                     </div>
                   )}
 
@@ -358,9 +437,7 @@ function chooseNextWord(excludeWord?: string) {
                     className="mx-auto mb-4 text-[#58a995]"
                     size={48}
                   />
-                  <h2 className="text-2xl font-extrabold">
-                    Snyggt jobbat!
-                  </h2>
+                  <h2 className="text-2xl font-extrabold">Snyggt jobbat!</h2>
                   <p className="mt-3 leading-7 text-[#496c72]">
                     Du svarade rätt på {correctCount} av {sessionCount} frågor.
                     Alla ord du klarade är borttagna från listan.
