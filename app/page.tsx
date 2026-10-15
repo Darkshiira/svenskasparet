@@ -17,42 +17,59 @@ import {
   Timer,
 } from "lucide-react";
 
-const learningAreas = [
+import {
+  EXERCISE_PROGRESS_EVENT,
+  getExerciseProgress,
+  getAreaPercentage,
+  ROUNDS_GOAL,
+  type ExerciseArea,
+  type ExerciseProgress,
+} from "@/app/lib/exerciseProgress";
+
+const learningAreas: {
+  id: ExerciseArea;
+  title: string;
+  description: string;
+  level: string;
+  color: keyof typeof cardColors;
+  image: string;
+  href: string;
+}[] = [
   {
+    id: "grunder",
     title: "Grunder & hälsningar",
     description: "Lär dig enkla ord och fraser för vardagen.",
     level: "Nybörjare",
-    progress: 60,
     color: "mint",
     image: "/images/grunder-icon.png",
     href: "#snabbsparet",
   },
   {
+    id: "en-eller-ett",
     title: "En eller ett?",
     description: "Lär dig vilket ord som passar.",
     level: "Grundnivå",
-    progress: 40,
     color: "coral",
     image: "/images/En-eller-ett-icon.png",
     href: "/exercises/en-eller-ett",
   },
   {
+    id: "stavning",
     title: "Stavning",
     description: "Träna på bokstäver och stavningsregler.",
     level: "Grundnivå",
-    progress: 0,
     color: "purple",
     image: "/images/stavning-icon.png",
     href: "/exercises/stavningsjakten",
   },
   {
+    id: "meningsbyggnad",
     title: "Meningsbyggnad",
     description: "Bygg meningar och upptäck mönster.",
     level: "Medel",
-    progress: 0,
     color: "yellow",
     image: "/images/meningsbyggnad-icon.png",
-    href: "#snabbsparet",
+    href: "/exercises/meningsbyggnad",
   },
 ];
 
@@ -113,27 +130,34 @@ export default function Home() {
   const [lastSevenDays, setLastSevenDays] = useState<
     { label: string; dateKey: string }[]
   >([]);
-
+  const [exerciseProgress, setExerciseProgress] = useState<ExerciseProgress>({
+    grunder: 0,
+    "en-eller-ett": 0,
+    stavning: 0,
+    meningsbyggnad: 0,
+  });
   useEffect(() => {
     function updateStats() {
       const progress = getProgress();
       const activity = getActivity();
+
       setLastSevenDays(getLastSevenDays(new Date()));
       setAnswered(progress.answered);
       setCorrect(progress.correct);
       setStreak(getCurrentStreak());
       setActiveDates(activity.dates);
+      setExerciseProgress(getExerciseProgress());
     }
 
     updateStats();
 
+    window.addEventListener(EXERCISE_PROGRESS_EVENT, updateStats);
     window.addEventListener("svenskasparet-progress-updated", updateStats);
-
     window.addEventListener("storage", updateStats);
 
     return () => {
+      window.removeEventListener(EXERCISE_PROGRESS_EVENT, updateStats);
       window.removeEventListener("svenskasparet-progress-updated", updateStats);
-
       window.removeEventListener("storage", updateStats);
     };
   }, []);
@@ -262,8 +286,9 @@ export default function Home() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {learningAreas.map((area) => {
-              const colors = cardColors[area.color as keyof typeof cardColors];
-
+              const colors = cardColors[area.color];
+              const percentage = getAreaPercentage(exerciseProgress, area.id);
+              const completedRounds = exerciseProgress[area.id];
               return (
                 <Link
                   key={area.title}
@@ -302,21 +327,24 @@ export default function Home() {
                     >
                       {area.level}
                     </span>
+
                     <div
                       role="progressbar"
                       aria-label={`Framsteg i ${area.title}`}
-                      aria-valuenow={area.progress}
+                      aria-valuenow={percentage}
                       aria-valuemin={0}
                       aria-valuemax={100}
                       className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-white/80"
+                      title={`${completedRounds} av ${ROUNDS_GOAL} rundor`}
                     >
                       <div
-                        className="h-full rounded-full bg-[#4f9a82]"
-                        style={{ width: `${area.progress}%` }}
+                        className="h-full rounded-full bg-[#4f9a82] transition-all duration-500"
+                        style={{ width: `${percentage}%` }}
                       />
                     </div>
+
                     <span className="text-[11px] font-extrabold text-[#42676a]">
-                      {area.progress}%
+                      {percentage}%
                     </span>
                   </div>
                 </Link>

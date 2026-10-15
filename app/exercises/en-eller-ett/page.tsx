@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowRight,
+  ArrowLeft,
   BookOpen,
   CheckCircle2,
   RotateCcw,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { enEttQuestions, type Article } from "@/app/data/enEtt";
 import { saveTrickyWord, removeTrickyWord } from "@/app/lib/trickyWords";
+import { recordCompletedRound } from "@/app/lib/exerciseProgress";
 
 const TRICKY_WORDS_KEY = "svenskasparet-tricky-words";
 
@@ -233,9 +235,16 @@ export default function EnEllerEttPage() {
   }
 
   function handleNext() {
-    setSelectedAnswer(null);
-    setQuestionIndex((current) => current + 1);
+  if (!selectedAnswer || finished || questions.length === 0) return;
+
+  // The learner has completed the final question.
+  if (questionIndex === questions.length - 1) {
+    recordCompletedRound("en-eller-ett");
   }
+
+  setSelectedAnswer(null);
+  setQuestionIndex((current) => current + 1);
+}
 
   function handleRestart() {
     setQuestions(getRandomQuestions());
@@ -248,6 +257,12 @@ export default function EnEllerEttPage() {
   return (
     <main className="min-h-screen bg-[#f3f7f9] px-4 py-5 text-[#173f45] sm:px-6 sm:py-8">
       <div className="mx-auto max-w-4xl">
+        <Link
+          href="/#ovningar"
+          className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#54727b]"
+        >
+          <ArrowLeft size={18} /> Alla övningar
+        </Link>
         <section className="relative mb-6 overflow-hidden rounded-3xl border border-white/80 bg-gradient-to-br from-[#fff0eb] via-[#fdf2ef] to-[#f9e9e3] p-6 sm:p-9">
           <div className="relative z-10 flex items-center gap-3 sm:gap-6">
             <div className="min-w-0 flex-1">

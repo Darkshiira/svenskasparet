@@ -20,7 +20,9 @@ function exerciseLabel(exercise: TrickyWord["exercise"]) {
     case "snabbspåret":
       return "Snabbspåret";
     case "stavning":
-      return "stavning";
+      return "Stavning";
+    case "meningsbyggnad":
+      return "Meningsbyggnad";
     default:
       return exercise;
   }
@@ -34,12 +36,26 @@ function normalizeAnswer(value: string) {
   return value.trim().toLocaleLowerCase("sv-SE");
 }
 
+function shuffle<T>(items: readonly T[]): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const random = new Uint32Array(1);
+    window.crypto.getRandomValues(random);
+    const j = random[0] % (i + 1);
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 export default function KlurigaOrdPage() {
   const [trickyWords, setTrickyWords] = useState<TrickyWord[] | null>(null);
   const [practiceMode, setPracticeMode] = useState(false);
   const [currentWord, setCurrentWord] = useState<TrickyWord | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [typedAnswer, setTypedAnswer] = useState("");
+  const [tiles, setTiles] = useState<{ id: number; word: string }[]>([]);
+  const [selectedTiles, setSelectedTiles] = useState<number[]>([]);
+  const [practiceOptions, setPracticeOptions] = useState<string[]>([]);
   const [correctCount, setCorrectCount] = useState(0);
   const [sessionCount, setSessionCount] = useState(0);
 
@@ -86,6 +102,18 @@ export default function KlurigaOrdPage() {
     const next = choices[randomValues[0] % choices.length];
 
     setCurrentWord(next);
+    setTiles(
+      shuffle(
+        (next.words ?? next.answer.split(" ")).map((word, id) => ({
+          id,
+          word,
+        })),
+      ),
+    );
+    setSelectedTiles([]);
+    setPracticeOptions(
+      shuffle(next.options ?? (next.mode === "article" ? ["en", "ett"] : [])),
+    );
     setSelectedAnswer(null);
     setTypedAnswer("");
   }
@@ -160,17 +188,18 @@ export default function KlurigaOrdPage() {
     );
   }
 
-  const options =
-    currentWord?.options && currentWord.options.length > 0
-      ? currentWord.options
-      : currentWord?.mode === "article"
-        ? ["en", "ett"]
-        : [];
-
+  const options = practiceOptions;
+  const useWordTiles =
+    currentWord?.exercise === "meningsbyggnad" && currentWord.mode === "build";
   const useChoiceButtons =
     currentWord !== null &&
+    options.length > 0 &&
     (currentWord.mode === "article" ||
-      (currentWord.mode === "choice" && options.length > 0));
+      currentWord.mode === "choice" ||
+      currentWord.mode === "missing");
+  const builtAnswer = selectedTiles
+    .map((id) => tiles.find((tile) => tile.id === id)!.word)
+    .join(" ");
 
   return (
     <main className="min-h-screen bg-[#f3f7f9] px-4 py-6 text-[#173f45] sm:px-6 sm:py-10">
@@ -196,8 +225,8 @@ export default function KlurigaOrdPage() {
                     Mina kluriga ord
                   </h1>
                   <p className="mt-2 leading-7 text-[#496c72]">
-                    Här samlas orden du har svarat fel på. Öva på dem igen och
-                    rensa listan allt eftersom du blir säkrare.
+                    Här samlas ord och meningar du har svarat fel på. Öva på dem
+                    igen och rensa listan allt eftersom du blir säkrare.
                   </p>
                 </div>
               </div>
@@ -333,7 +362,7 @@ export default function KlurigaOrdPage() {
                         Skriv hela ordet i rutan nedanför.
                       </p>
                     )}
-                  {currentWord.exercise !== "stavning" && (
+                  {currentWord.mode === "article" && (
                     <div className="my-7 rounded-2xl bg-[#f0f6f4] px-5 py-10 text-center">
                       <p className="text-3xl font-extrabold">
                         {currentWord.word}
@@ -341,8 +370,74 @@ export default function KlurigaOrdPage() {
                     </div>
                   )}
 
-                  {useChoiceButtons ? (
-                    <div className="grid grid-cols-2 gap-4">
+                  {useWordTiles ? (
+                    <div className="mt-6 space-y-4">
+                      <p className="text-sm text-[#496c72]">
+                        Tryck på orden i rätt ordning. Tryck på ett valt ord för
+                        att lägga tillbaka det.
+                      </p>
+                      <div
+                        aria-label="Din mening"
+                        className="flex min-h-24 flex-wrap items-center gap-2 rounded-2xl border-2 border-dashed border-[#dfcfaa] bg-[#fcfaf5] p-4"
+                      >
+                        {selectedTiles.length === 0 && (
+                          <span className="text-sm text-[#648083]">
+                            Din mening hamnar här…
+                          </span>
+                        )}
+                        {selectedTiles.map((id) => (
+                          <button
+                            key={id}
+                            type="button"
+                            disabled={answered}
+                            onClick={() =>
+                              setSelectedTiles((items) =>
+                                items.filter((item) => item !== id),
+                              )
+                            }
+                            aria-label={`Ta bort ${tiles.find((tile) => tile.id === id)!.word}`}
+                            className="min-h-11 rounded-xl border border-[#dfcfaa] bg-white px-4 py-2 font-bold"
+                          >
+                            {tiles.find((tile) => tile.id === id)!.word}
+                          </button>
+                        ))}
+                        {selectedTiles.length > 0 && (
+                          <span aria-hidden="true">.</span>
+                        )}
+                      </div>
+                      <div
+                        aria-label="Ord att välja"
+                        className="flex flex-wrap gap-2"
+                      >
+                        {tiles
+                          .filter((tile) => !selectedTiles.includes(tile.id))
+                          .map((tile) => (
+                            <button
+                              key={tile.id}
+                              type="button"
+                              disabled={answered}
+                              onClick={() =>
+                                setSelectedTiles((items) => [...items, tile.id])
+                              }
+                              className="min-h-12 rounded-xl border border-[#dfcfaa] bg-[#f8efd9] px-4 py-3 font-bold"
+                            >
+                              {tile.word}
+                            </button>
+                          ))}
+                      </div>
+                      {!answered && (
+                        <button
+                          type="button"
+                          disabled={selectedTiles.length !== tiles.length}
+                          onClick={() => handleAnswer(builtAnswer)}
+                          className="min-h-12 w-full rounded-full bg-[#17665d] px-6 py-3 font-bold text-white disabled:opacity-50"
+                        >
+                          Kontrollera svar
+                        </button>
+                      )}
+                    </div>
+                  ) : useChoiceButtons ? (
+                    <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                       {options.map((option) => {
                         const chosen = selectedAnswer === option;
                         const correctChoice =
@@ -419,7 +514,7 @@ export default function KlurigaOrdPage() {
                     >
                       <p className="font-bold">
                         {isCorrect
-                          ? "Rätt! Ordet är avklarat! 🎉"
+                          ? "Rätt! Frågan är avklarad! 🎉"
                           : "Inte riktigt!"}
                       </p>
                       <p className="mt-1 text-sm leading-6">
@@ -446,7 +541,7 @@ export default function KlurigaOrdPage() {
                     >
                       {trickyWords.length === 0
                         ? "Visa sammanfattning"
-                        : "Nästa ord"}
+                        : "Nästa fråga"}
                       <ArrowLeft className="rotate-180" size={18} />
                     </button>
                   )}

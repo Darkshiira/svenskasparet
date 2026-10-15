@@ -2,12 +2,12 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
   Check,
   ChevronRight,
-  CircleHelp,
   RotateCcw,
   BookOpen,
   SpellCheck,
@@ -33,6 +33,7 @@ import {
 if (process.env.NODE_ENV === "development") {
   validateFillQuestions();
 }
+import { recordCompletedRound } from "@/app/lib/exerciseProgress";
 
 const modes: {
   id: Mode;
@@ -294,7 +295,10 @@ export default function StavningsjaktenPage() {
   }
 
   function nextQuestion() {
+    if (!current || !feedback || finished) return;
+
     if (index + 1 >= total) {
+      recordCompletedRound("stavning");
       setFinished(true);
       return;
     }
@@ -355,6 +359,12 @@ export default function StavningsjaktenPage() {
   return (
     <main className="min-h-screen bg-[radial-gradient(ellipse_at_8%_20%,rgba(224,239,244,0.38),transparent_38%),#f3f7f9] text-[#153e43]">
       <div className="mx-auto w-full max-w-5xl px-4 py-7 sm:px-6 sm:py-10">
+        <Link
+          href="/#ovningar"
+          className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#54727b]"
+        >
+          <ArrowLeft size={18} /> Alla övningar
+        </Link>
         {/* Introduction */}
         <section className="mt-5 overflow-hidden rounded-[26px] border border-[#DED5F5] bg-gradient-to-br from-[#F5F1FD] via-[#F5F3FC] to-[#E9F1F4] p-6 sm:p-9">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/75 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[#65518F]">
