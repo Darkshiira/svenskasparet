@@ -364,11 +364,11 @@ export const enEttQuestions: EnEttQuestion[] = [
     example: "Ett regn började falla.",
   },
   {
-    id: "snow",
-    word: "snö",
+    id: "box",
+    word: "kartong",
     correctArticle: "en",
-    explanation: "Snö är ett en-ord. I bestämd form heter det snön.",
-    example: "Det ligger snö på marken.",
+    explanation: "Kartong är ett en-ord. I bestämd form heter det kartongen.",
+    example: "Du packar i en kartong.",
   },
 
   // School and everyday objects
