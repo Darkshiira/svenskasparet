@@ -268,7 +268,7 @@ export default function EnEllerEttPage() {
 
             <div className="relative hidden h-32 w-32 shrink-0 items-center justify-center sm:flex sm:h-40 sm:w-40 md:h-48 md:w-48">
               <Image
-                src="/images/en-eller-ett-icon.png"
+                src="/images/En-eller-ett-icon.png"
                 alt=""
                 width={192}
                 height={192}
