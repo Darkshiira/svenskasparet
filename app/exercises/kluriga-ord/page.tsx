@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
@@ -12,6 +12,7 @@ import {
   type TrickyWord,
 } from "@/app/lib/trickyWords";
 import { recordAnswer } from "@/app/lib/progress";
+import { GrunderTrickyPractice } from "@/app/components/grunder/GrunderTrickyPractice";
 
 function exerciseLabel(exercise: TrickyWord["exercise"]) {
   switch (exercise) {
@@ -21,6 +22,8 @@ function exerciseLabel(exercise: TrickyWord["exercise"]) {
       return "Snabbspåret";
     case "stavning":
       return "Stavning";
+    case "grunder":
+      return "Grunder & hälsningar";
     case "meningsbyggnad":
       return "Meningsbyggnad";
     default:
@@ -59,6 +62,8 @@ export default function KlurigaOrdPage() {
   const [correctCount, setCorrectCount] = useState(0);
   const [sessionCount, setSessionCount] = useState(0);
 
+  const answerLock = useRef(false);
+  const sessionActive = useRef(false);
   const answered = selectedAnswer !== null;
   const isCorrect =
     currentWord !== null &&
@@ -81,7 +86,31 @@ export default function KlurigaOrdPage() {
     };
   }, []);
 
+  useEffect(() => {
+    function leaveExercise() {
+      sessionActive.current = false;
+      answerLock.current = true;
+      setPracticeMode(false);
+      setCurrentWord(null);
+      setSelectedAnswer(null);
+      setTypedAnswer("");
+      setSelectedTiles([]);
+      setTiles([]);
+      setPracticeOptions([]);
+    }
+    window.addEventListener("exercise:leave", leaveExercise);
+    window.addEventListener("popstate", leaveExercise);
+    window.addEventListener("pagehide", leaveExercise);
+    return () => {
+      sessionActive.current = false;
+      window.removeEventListener("exercise:leave", leaveExercise);
+      window.removeEventListener("popstate", leaveExercise);
+      window.removeEventListener("pagehide", leaveExercise);
+    };
+  }, []);
+
   function chooseNextWord(exclude?: TrickyWord) {
+    answerLock.current = false;
     const words = getTrickyWords();
     setTrickyWords(words);
 
@@ -126,12 +155,14 @@ export default function KlurigaOrdPage() {
 
     setCorrectCount(0);
     setSessionCount(0);
+    sessionActive.current = true;
     setPracticeMode(true);
     chooseNextWord();
   }
 
   function handleAnswer(answer: string) {
-    if (!currentWord || answered) return;
+    if (!currentWord || !sessionActive.current || answerLock.current || answered) return;
+    answerLock.current = true;
 
     const correct =
       normalizeAnswer(answer) === normalizeAnswer(currentWord.answer);
@@ -158,7 +189,7 @@ export default function KlurigaOrdPage() {
   }
 
   function continuePractice() {
-    if (!currentWord || !answered) return;
+    if (!currentWord || !sessionActive.current || !answered) return;
 
     const remaining = getTrickyWords();
     setTrickyWords(remaining);
@@ -172,6 +203,8 @@ export default function KlurigaOrdPage() {
   }
 
   function stopPractice() {
+    sessionActive.current = false;
+    answerLock.current = true;
     setPracticeMode(false);
     setCurrentWord(null);
     setSelectedAnswer(null);
@@ -370,7 +403,16 @@ export default function KlurigaOrdPage() {
                     </div>
                   )}
 
-                  {useWordTiles ? (
+                  {currentWord.exercise === "grunder" ? (
+                    <GrunderTrickyPractice
+                      key={`${currentWord.exercise}:${currentWord.id}`}
+                      item={currentWord}
+                      options={practiceOptions}
+                      answered={answered}
+                      selectedAnswer={selectedAnswer}
+                      onAnswer={handleAnswer}
+                    />
+                  ) : useWordTiles ? (
                     <div className="mt-6 space-y-4">
                       <p className="text-sm text-[#496c72]">
                         Tryck på orden i rätt ordning. Tryck på ett valt ord för

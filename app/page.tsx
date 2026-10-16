@@ -42,7 +42,7 @@ const learningAreas: {
     level: "Nybörjare",
     color: "mint",
     image: "/images/grunder-icon.png",
-    href: "#snabbsparet",
+    href: "/exercises/grunder",
   },
   {
     id: "en-eller-ett",
