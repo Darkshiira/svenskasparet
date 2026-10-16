@@ -24,7 +24,10 @@ import {
   type TrickyWord,
 } from "@/app/lib/trickyWords";
 import { toGrunderTrickyWord } from "@/app/lib/grunderTrickyWords";
-import { useSwedishSpeech } from "@/app/hooks/useSwedishSpeech";
+import {
+  useGrunderAudio,
+  getGrunderAudioPath,
+} from "@/app/hooks/useGrunderAudio";
 import {
   PositionPicture,
   SituationPicture,
@@ -145,8 +148,8 @@ export default function GrunderPage() {
   const roundCompleted = useRef(false);
   const sessionActive = useRef(false);
   const heading = useRef<HTMLHeadingElement>(null);
-  const speech = useSwedishSpeech();
-  const stopSpeech = speech.stop;
+  const audio = useGrunderAudio();
+  const stopAudio = audio.stop;
   const current = rounds[index];
   const currentSavedQuestion = current ? toGrunderTrickyWord(current) : null;
   const isSaved =
@@ -167,7 +170,7 @@ export default function GrunderPage() {
     function leaveExercise() {
       sessionActive.current = false;
       answerLock.current = true;
-      stopSpeech();
+      stopAudio();
       setMode(null);
       setRounds([]);
       setIndex(0);
@@ -185,10 +188,10 @@ export default function GrunderPage() {
       window.removeEventListener("popstate", leaveExercise);
       window.removeEventListener("pagehide", leaveExercise);
     };
-  }, [stopSpeech]);
+  }, [stopAudio]);
 
   function start(nextMode: Mode) {
-    speech.stop();
+    audio.stop();
     answerLock.current = false;
     roundCompleted.current = false;
     sessionActive.current = true;
@@ -201,7 +204,7 @@ export default function GrunderPage() {
     setHeard(false);
   }
   function menu() {
-    speech.stop();
+    audio.stop();
     sessionActive.current = false;
     answerLock.current = true;
     setMode(null);
@@ -219,7 +222,7 @@ export default function GrunderPage() {
     )
       return;
     answerLock.current = true;
-    speech.stop();
+    audio.stop();
     setAnswer(value);
     const isCorrect = value === expected;
     if (isCorrect) setScore((previous) => previous + 1);
@@ -249,7 +252,7 @@ export default function GrunderPage() {
 
   function next() {
     if (!sessionActive.current || answer === null || finished) return;
-    speech.stop();
+    audio.stop();
     if (index === rounds.length - 1) {
       setFinished(true);
       return;
@@ -473,41 +476,38 @@ export default function GrunderPage() {
                       <div className="my-6 flex flex-wrap items-center justify-center gap-3 rounded-[22px] bg-[#edf6f0] p-6">
                         <button
                           className={primary}
-                          disabled={speech.playing}
+                          disabled={audio.playing}
                           onClick={() =>
-                            speech.speak(current.data.word, false, () =>
-                              setHeard(true),
+                            audio.play(
+                              getGrunderAudioPath(current.data.id),
+                              false,
+                              () => setHeard(true),
                             )
                           }
                         >
                           <Volume2 size={22} />
-                          {speech.playing ? "Spelar …" : "Lyssna på ordet"}
+                          {audio.playing ? "Spelar …" : "Lyssna på ordet"}
                         </button>
                         <button
                           className={secondary}
-                          disabled={speech.playing}
+                          disabled={audio.playing}
                           onClick={() =>
-                            speech.speak(current.data.word, true, () =>
-                              setHeard(true),
+                            audio.play(
+                              getGrunderAudioPath(current.data.id),
+                              true,
+                              () => setHeard(true),
                             )
                           }
                         >
                           Lyssna långsamt
                         </button>
                       </div>
-                      {!speech.hasSwedishVoice && (
-                        <p className="mb-4 rounded-xl bg-[#fff7e9] p-4 text-sm leading-6 text-[#7a603d]">
-                          En svensk röst behövs för den här övningen. Om ljudet
-                          inte fungerar kan du prova en annan webbläsare eller
-                          lägga till en svensk röst på din enhet.
-                        </p>
-                      )}
-                      {speech.error && (
+                      {audio.error && (
                         <p
                           role="alert"
                           className="mb-4 rounded-xl bg-[#fff0e9] p-4 text-sm leading-6"
                         >
-                          {speech.error}
+                          {audio.error}
                         </p>
                       )}
                       <div className="grid grid-cols-2 gap-3">
