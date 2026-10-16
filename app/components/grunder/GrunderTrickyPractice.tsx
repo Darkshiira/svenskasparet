@@ -9,8 +9,7 @@ import {
   getGrunderAudioPath,
 } from "@/app/hooks/useGrunderAudio";
 import {
-  PositionPicture,
-  SituationPicture,
+  PositionPicture
 } from "@/app/components/grunder/GrunderPictures";
 
 type Props = {
@@ -59,7 +58,7 @@ export function GrunderTrickyPractice({
     "inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#bedfd3] bg-white px-5 py-3 text-sm font-bold text-[#276b5b] disabled:opacity-50";
   return (
     <div className="mt-5 space-y-4">
-      {situation && <SituationPicture place={situation.place} />}
+      {/* {situation && <SituationPicture place={situation.place} />} */}
       {position && <PositionPicture position={position.position} />}
       {item.mode === "positions" && !position && (
         <p role="status" className="rounded-xl bg-[#fff8ed] p-4 text-sm">
