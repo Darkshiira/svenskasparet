@@ -16,7 +16,10 @@ import {
 } from "lucide-react";
 import { enEttQuestions, type Article } from "@/app/data/enEtt";
 import { saveTrickyWord, removeTrickyWord } from "@/app/lib/trickyWords";
-import { recordCompletedRound } from "@/app/lib/exerciseProgress";
+import {
+  recordCompletedRound,
+  recordExerciseResult,
+} from "@/app/lib/exerciseProgress";
 
 const TRICKY_WORDS_KEY = "svenskasparet-tricky-words";
 
@@ -235,16 +238,19 @@ export default function EnEllerEttPage() {
   }
 
   function handleNext() {
-  if (!selectedAnswer || finished || questions.length === 0) return;
+    if (selectedAnswer === null || finished || questions.length === 0) {
+      return;
+    }
 
-  // The learner has completed the final question.
-  if (questionIndex === questions.length - 1) {
-    recordCompletedRound("en-eller-ett");
+    if (questionIndex === questions.length - 1) {
+      recordCompletedRound("en-eller-ett");
+
+      recordExerciseResult("en-eller-ett", score, questions.length);
+    }
+
+    setSelectedAnswer(null);
+    setQuestionIndex((current) => current + 1);
   }
-
-  setSelectedAnswer(null);
-  setQuestionIndex((current) => current + 1);
-}
 
   function handleRestart() {
     setQuestions(getRandomQuestions());

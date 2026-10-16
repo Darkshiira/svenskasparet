@@ -21,7 +21,10 @@ import {
   removeTrickyWord,
 } from "@/app/lib/trickyWords";
 import { recordAnswer } from "@/app/lib/progress";
-import { recordCompletedRound } from "@/app/lib/exerciseProgress";
+import {
+  recordCompletedRound,
+  recordExerciseResult,
+} from "@/app/lib/exerciseProgress";
 import { questions, type Mode, type Question } from "@/app/data/meningsbyggnad";
 
 const modes = [
@@ -152,23 +155,43 @@ export default function MeningsbyggnadPage() {
   }
 
   function check() {
-    if (!ready || checked) return;
+    if (!ready || checked || !current || !mode || finished) return;
+
     recordAnswer(correct);
-    // Count the round once all 10 questions have been answered.
+
     if (index === round.length - 1 && !roundRecorded.current) {
       roundRecorded.current = true;
+
       recordCompletedRound("meningsbyggnad");
+
+      const exerciseIds = {
+        build: "mening-bygg",
+        choice: "mening-valj",
+        missing: "mening-saknas",
+      } as const;
+
+      // Include the answer being checked right now.
+      const finalScore = score + (correct ? 1 : 0);
+
+      recordExerciseResult(exerciseIds[mode], finalScore, round.length);
     }
+
     if (correct) {
       removeTrickyWord(current.id, "meningsbyggnad");
     } else {
       saveCurrentQuestion();
     }
+
     setSavedAutomatically(!correct);
     syncSavedStatus();
-    if (correct) setScore((value) => value + 1);
+
+    if (correct) {
+      setScore((value) => value + 1);
+    }
+
     setChecked(true);
   }
+
   function next() {
     if (index === round.length - 1) {
       setFinished(true);
@@ -256,7 +279,10 @@ export default function MeningsbyggnadPage() {
                       aria-hidden="true"
                       className="absolute right-5 top-5 flex size-8 items-center justify-center rounded-full border border-white/80 bg-white/75 text-[#96691e]"
                     >
-                      <ChevronRight size={18} className="transition-transform group-hover:translate-x-0.5" />
+                      <ChevronRight
+                        size={18}
+                        className="transition-transform group-hover:translate-x-0.5"
+                      />
                     </span>
                     <span className="mb-4 flex h-28 w-40 max-w-full shrink-0 items-center justify-start">
                       <Image
@@ -268,11 +294,18 @@ export default function MeningsbyggnadPage() {
                         sizes="160px"
                       />
                     </span>
-                    <h3 className="text-lg font-extrabold leading-7 tracking-tight">{title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-[#54727b]">{description}</p>
+                    <h3 className="text-lg font-extrabold leading-7 tracking-tight">
+                      {title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-[#54727b]">
+                      {description}
+                    </p>
                     <span className="mt-auto inline-flex items-center gap-2 pt-7 text-sm font-extrabold text-[#96691e]">
                       Börja öva
-                      <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
+                      <ArrowRight
+                        size={17}
+                        className="transition-transform group-hover:translate-x-0.5"
+                      />
                     </span>
                   </button>
                 ))}

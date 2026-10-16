@@ -504,12 +504,15 @@ export default function Home() {
               <Flame size={19} className="fill-[#ffd1a6] text-[#f47c43]" />
               {streak} {streak === 1 ? "dag" : "dagar"}
             </strong>
-            <div className="mt-3 flex gap-1.5" aria-label="Tre dagar i rad">
-              {[1, 2, 3, 4, 5].map((day) => (
+            <div
+              className="mt-3 flex gap-1.5"
+              aria-label={`${streak} ${streak === 1 ? "dag" : "dagar"} i rad`}
+            >
+              {Array.from({ length: 7 }, (_, index) => index + 1).map((day) => (
                 <span
                   key={day}
-                  className={`h-2 w-5 rounded-full ${
-                    day <= Math.min(streak, 5) ? "bg-[#70b39a]" : "bg-[#e5ece9]"
+                  className={`h-2 w-4 rounded-full ${
+                    day <= Math.min(streak, 7) ? "bg-[#70b39a]" : "bg-[#e5ece9]"
                   }`}
                 />
               ))}
@@ -547,6 +550,15 @@ export default function Home() {
             </div>
           </div>
         </section>
+        <div className="-mt-5 mb-9 flex justify-end">
+          <Link
+            href="/framsteg"
+            className="inline-flex items-center gap-2 rounded-lg px-2 py-2 text-sm font-bold text-[#247363] transition hover:text-[#183f47]"
+          >
+            Se mina framsteg
+            <ArrowRight size={16} />
+          </Link>
+        </div>
 
         {/* Sidfot */}
         <Footer />

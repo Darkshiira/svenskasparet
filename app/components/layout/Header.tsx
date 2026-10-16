@@ -13,7 +13,7 @@ const navigation = [
   { label: "Hem", href: "/#hem" },
   { label: "Övningar", href: "/#ovningar" },
   { label: "Ord att träna på", href: "/exercises/kluriga-ord" },
-  { label: "Mina framsteg", href: "/#framsteg" },
+  { label: "Mina framsteg", href: "/framsteg" },
 ];
 
 export default function Header({ streak }: HeaderProps) {

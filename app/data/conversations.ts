@@ -29,7 +29,7 @@ export const conversations: Conversation[] = [
     id: "greeting", title: "Hälsa på någon", titleEn: "Say hello", emoji: "👋", place: "park", other: "Alex",
     steps: [
       { cue: "👋", hint: "Hälsa", hintEn: "Say hello", prompt: "Hej!", answer: "Hej!", alternative: "God natt!", reply: "Jag heter Alex. Vad heter du?" },
-      { cue: "📛 Sam", hint: "Du är Sam", hintEn: "You are Sam", prompt: "Jag heter Alex. Vad heter du?", answer: "Jag heter Sam.", alternative: "En kaffe, tack.", reply: "Trevligt att träffas! Hur mår du?" },
+      { cue: "📛 Sam", hint: "Du är Sam", hintEn: "You are Sam", prompt: "Jag heter Alex. Vad heter du?", answer: "Jag heter...", alternative: "En kaffe, tack.", reply: "Trevligt att träffas! Hur mår du?" },
       { cue: "🙂 ↔ 🙂", hint: "Svara och fråga tillbaka", hintEn: "You feel good. Ask how Alex is too", prompt: "Trevligt att träffas! Hur mår du?", answer: "Bra, tack! Och du?", alternative: "Jag heter Sam.", reply: "Jag mår också bra, tack!" },
     ],
   },
@@ -76,7 +76,7 @@ export const conversationAudio: string[] = [
   "Hej!",
   "God natt!",
   "Jag heter Alex. Vad heter du?",
-  "Jag heter Sam.",
+  "Jag heter...",
   "En kaffe, tack.",
   "Trevligt att träffas! Hur mår du?",
   "Bra, tack! Och du?",

@@ -33,7 +33,10 @@ import {
 if (process.env.NODE_ENV === "development") {
   validateFillQuestions();
 }
-import { recordCompletedRound } from "@/app/lib/exerciseProgress";
+import {
+  recordCompletedRound,
+  recordExerciseResult,
+} from "@/app/lib/exerciseProgress";
 
 const modes: {
   id: Mode;
@@ -295,10 +298,19 @@ export default function StavningsjaktenPage() {
   }
 
   function nextQuestion() {
-    if (!current || !feedback || finished) return;
+    if (!current || !feedback || finished || !mode) return;
 
     if (index + 1 >= total) {
       recordCompletedRound("stavning");
+
+      const exerciseIds = {
+        choice: "stavning-choice",
+        fill: "stavning-fill",
+        double: "stavning-double",
+      } as const;
+
+      recordExerciseResult(exerciseIds[mode], score, total);
+
       setFinished(true);
       return;
     }

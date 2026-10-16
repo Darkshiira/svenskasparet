@@ -16,7 +16,10 @@ import {
   X,
 } from "lucide-react";
 import { recordAnswer } from "@/app/lib/progress";
-import { recordCompletedRound } from "@/app/lib/exerciseProgress";
+import {
+  recordCompletedRound,
+  recordExerciseResult,
+} from "@/app/lib/exerciseProgress";
 import {
   saveTrickyWord,
   removeTrickyWord,
@@ -29,9 +32,7 @@ import {
   useGrunderAudio,
   getGrunderAudioPath,
 } from "@/app/hooks/useGrunderAudio";
-import {
-  PositionPicture
-} from "@/app/components/grunder/GrunderPictures";
+import { PositionPicture } from "@/app/components/grunder/GrunderPictures";
 import {
   vocabulary,
   situations,
@@ -239,7 +240,18 @@ export default function GrunderPage() {
     // leaves before opening the result screen. Never count an unfinished round.
     if (index === rounds.length - 1 && !roundCompleted.current) {
       roundCompleted.current = true;
+
       recordCompletedRound("grunder");
+
+      // Include the answer just submitted.
+      // setScore hasn't updated the score variable in this handler yet.
+      const finalScore = score + (isCorrect ? 1 : 0);
+
+      if (current.mode === "positions") {
+        recordExerciseResult("grunder-lagesord", finalScore, rounds.length);
+      } else if (current.mode === "listen") {
+        recordExerciseResult("grunder-lyssna", finalScore, rounds.length);
+      }
     }
   }
   function toggleSavedQuestion() {

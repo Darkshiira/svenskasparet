@@ -1,3 +1,4 @@
+import { recordDailyAnswer } from "@/app/lib/dailyProgress";
 
 export type LearningProgress = {
   answered: number;
@@ -50,6 +51,10 @@ export function getProgress(): LearningProgress {
 }
 
 export function recordAnswer(isCorrect: boolean) {
+  recordDailyAnswer();
+
+  // Gör att startsidan kan uppdateras direkt.
+  window.dispatchEvent(new Event("svenskasparet-progress-updated"));
   if (!isBrowser()) return;
 
   const current = getProgress();
@@ -103,10 +108,10 @@ export function getActivity(): ActivityData {
     }
 
     return {
-  dates: [...new Set(parsed.dates)].filter((date) =>
-    /^\d{4}-\d{2}-\d{2}$/.test(date),
-  ),
-};
+      dates: [...new Set(parsed.dates)].filter((date) =>
+        /^\d{4}-\d{2}-\d{2}$/.test(date),
+      ),
+    };
   } catch {
     return { dates: [] };
   }
