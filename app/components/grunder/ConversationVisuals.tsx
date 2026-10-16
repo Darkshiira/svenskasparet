@@ -6,8 +6,8 @@ import type { Conversation } from "@/app/data/conversations";
 
 // A consistent portrait anchors the speaker beside each of their bubbles.
 export function SpeakerAvatar({ name, portrait }: { name: string; portrait?: "cafe" | "alex" | "clothes" | "visit" }) {
-  if (portrait) return <span role="img" aria-label={name} className="h-16 w-14 shrink-0 rounded-2xl border-2 border-[#bedfd3] bg-[#edf6f0] sm:h-20 sm:w-[72px]" style={{ backgroundImage: `url(/images/grunder/${portrait === "alex" ? "alex-scene" : portrait === "clothes" ? "clothes-scene" : portrait === "visit" ? "friend-scene" : "cafe-scene"}.png)`, backgroundSize: "420% auto", backgroundPosition: "28% 13%", backgroundRepeat: "no-repeat" }} />;
-  return <svg viewBox="0 0 80 88" role="img" aria-label={name} className="h-16 w-14 shrink-0 sm:h-20 sm:w-[72px]">
+  if (portrait) return <span role="img" aria-label={name} className="h-11 w-10 shrink-0 rounded-2xl border-2 border-[#bedfd3] bg-[#edf6f0] sm:h-20 sm:w-[72px]" style={{ backgroundImage: `url(/images/grunder/${portrait === "alex" ? "alex-scene" : portrait === "clothes" ? "clothes-scene" : portrait === "visit" ? "friend-scene" : "cafe-scene"}.png)`, backgroundSize: "420% auto", backgroundPosition: "28% 13%", backgroundRepeat: "no-repeat" }} />;
+  return <svg viewBox="0 0 80 88" role="img" aria-label={name} className="h-11 w-10 shrink-0 sm:h-20 sm:w-[72px]">
     <rect x="1" y="1" width="78" height="86" rx="25" fill="#e8f2eb" />
     <path d="M12 87V70Q12 52 40 52Q68 52 68 70V87" fill="#d49a70" />
     <path d="M25 60L31 55V72H49V55L55 60V87H25Z" fill="#35745f" />
@@ -21,9 +21,9 @@ export function SpeakerAvatar({ name, portrait }: { name: string; portrait?: "ca
 
 export function SpeakerBubble({ role, name, children, portrait }: { role: "other" | "you"; name: string; children: ReactNode; portrait?: "cafe" | "alex" | "clothes" | "visit" }) {
   const other = role === "other";
-  return <div className={`flex items-end gap-2 sm:gap-3 ${other ? "pr-5 sm:pr-12" : "flex-row-reverse pl-5 sm:pl-12"}`}>
-    {other ? <SpeakerAvatar name={name} portrait={portrait} /> : <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-full border border-[#bedfd3] bg-[#f0f7f3] text-[#17695d] sm:size-12"><UserRound size={24} /></span>}
-    <div className={`relative min-w-0 flex-1 rounded-2xl p-4 sm:p-5 ${other ? "rounded-bl-sm bg-[#edf6f0] text-[#183f47]" : "rounded-br-sm bg-[#17695d] text-white"}`}>
+  return <div className={`flex items-end gap-2 sm:gap-3 ${other ? "sm:pr-12" : "flex-row-reverse sm:pl-12"}`}>
+    {other ? <SpeakerAvatar name={name} portrait={portrait} /> : <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-full border border-[#bedfd3] bg-[#f0f7f3] text-[#17695d] sm:size-12"><UserRound size={24} /></span>}
+    <div className={`relative min-w-0 flex-1 rounded-2xl p-3 text-base leading-7 [overflow-wrap:anywhere] sm:p-5 ${other ? "rounded-bl-sm bg-[#edf6f0] text-[#183f47]" : "rounded-br-sm bg-[#17695d] text-white"}`}>
       <span aria-hidden="true" className={`absolute bottom-3 size-3 rotate-45 ${other ? "-left-1.5 bg-[#edf6f0]" : "-right-1.5 bg-[#17695d]"}`} />
       <p className={`mb-2 text-xs font-extrabold ${other ? "text-[#54727b]" : "text-white/85"}`}>{name}</p>
       {children}

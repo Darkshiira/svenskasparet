@@ -138,7 +138,7 @@ export default function ConversationBuilder({ onBack }: { onBack: () => void }) 
     if (isSaved) removeTrickyWord(savedQuestion.id, "grunder"); else saveTrickyWord(savedQuestion);
   }
 
-  return <section className="mx-auto max-w-3xl rounded-[28px] border border-[#bedfd3] bg-white p-5 text-[#183f47] sm:p-9">
+  return <section className="mx-auto max-w-3xl rounded-[28px] border border-[#bedfd3] bg-white p-4 text-[#183f47] sm:p-9">
     <div className="mb-6 flex flex-wrap justify-between gap-3">
       <button className={secondary} onClick={() => { stop(); if (scene) { setScene(null); setAudioMessage(""); } else onBack(); }}><ArrowLeft size={17} />{english ? "Back" : "Tillbaka"}</button>
       <button className={secondary} aria-pressed={english} onClick={() => setEnglish((value) => !value)}>{english ? "Svenska" : "English help"}</button>
@@ -185,7 +185,7 @@ export default function ConversationBuilder({ onBack }: { onBack: () => void }) 
       </form> : <div className="grid gap-3">{(orders[index] ? [step.answer, step.alternative] : [step.alternative, step.answer]).map((text) => <div key={text} className={`flex flex-wrap items-center gap-2 rounded-2xl border-2 p-3 ${selection !== null && (text === step.answer || (acceptsChoice && text === step.alternative)) ? "border-[#70af8f] bg-[#e4f3e9]" : selection === text ? "border-[#dba899] bg-[#fff0e9]" : "border-[#d3e5da]"}`}>
         <button className="min-h-12 min-w-0 flex-1 px-2 text-left font-bold disabled:cursor-default" disabled={selection !== null} onClick={() => choose(text)}>{text}{selection !== null && (text === step.answer || (acceptsChoice && text === step.alternative)) && <Check className="ml-2 inline" size={18} aria-label="Rätt svar" />}</button>{listen(text)}
       </div>)}</div>}
-      {selection !== null && <div className="mt-5 rounded-2xl bg-[#edf6f0] p-5">
+      {selection !== null && <div className="mt-6 space-y-4 rounded-2xl bg-transparent p-0 sm:space-y-0 sm:bg-[#edf6f0] sm:p-5">
         <p role="status" className="font-bold">{selectionCorrect ? (english ? "That fits!" : "Det passar bra!") : (english ? "For this picture, say:" : "Till den här bilden säger vi:")}</p>
         {!selectionCorrect && <p className="mt-2 font-bold">{step.answer}</p>}
         <div className="my-4"><SpeakerBubble role="you" name={english ? "You" : "Du"}><p className="mb-3 font-bold">{selectionCorrect ? selection : step.answer}</p>{listen(selectionCorrect && selection ? selection : step.answer)}</SpeakerBubble></div>
