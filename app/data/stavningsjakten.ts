@@ -198,14 +198,6 @@ export const questions: Record<Mode, Question[]> = {
       explanation: "Äntligen börjar med ä.",
     },
     {
-      id: "choice-överhuvudtaget",
-      type: "choice",
-      prompt: "Vilket ord är rätt stavat?",
-      options: ["över huvud taget", "överhuvudtaget", "över huvutaget"],
-      answer: "överhuvudtaget",
-      explanation: "Överhuvudtaget skrivs vanligtvis som ett ord.",
-    },
-    {
       id: "choice-åtminstone",
       type: "choice",
       prompt: "Vilket ord är rätt stavat?",
@@ -559,7 +551,7 @@ export const questions: Record<Mode, Question[]> = {
       prompt: "När jag svarar i telefon säger jag ofta ___.",
       options: ["halå", "hallå"],
       answer: "hallå",
-      explanation: "Hallå stavas med ett l i mitten.",
+      explanation: "Hallå stavas med dubbel-l.",
     },
     {
       id: "double-kassa",
