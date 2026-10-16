@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import ConversationBuilder from "@/app/components/grunder/ConversationBuilder";
 import Image from "next/image";
 import {
   ArrowLeft,
@@ -29,8 +30,7 @@ import {
   getGrunderAudioPath,
 } from "@/app/hooks/useGrunderAudio";
 import {
-  PositionPicture,
-  SituationPicture,
+  PositionPicture
 } from "@/app/components/grunder/GrunderPictures";
 import {
   vocabulary,
@@ -55,9 +55,9 @@ type Round =
 const modes = [
   {
     id: "situations" as const,
-    title: "Vad säger du?",
+    title: "Bygg ett samtal",
     description:
-      "Möt en granne, handla och gå på restaurang. Vad passar att säga?",
+      "Se ett exempel. Lyssna och bygg ett kort samtal, ett svar i taget.",
     image: "/images/grunder-vad-sager-du-icon.png",
     tag: "Vardagssamtal",
     background: "bg-[#eff7f3]",
@@ -312,7 +312,7 @@ export default function GrunderPage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {[
-                  "10 frågor per omgång",
+                  "Korta övningar",
                   "Bilder som stöd",
                   "Träna i din egen takt",
                 ].map((label) => (
@@ -366,6 +366,8 @@ export default function GrunderPage() {
               </div>
             </section>
           </>
+        ) : mode === "situations" ? (
+          <ConversationBuilder onBack={menu} />
         ) : (
           <section className="mx-auto max-w-3xl rounded-[28px] border border-[#bedfd3] bg-white p-5 sm:p-9">
             <button
@@ -445,7 +447,6 @@ export default function GrunderPage() {
                       <p className="my-4 text-sm leading-7 text-[#54727b]">
                         {current.data.context}
                       </p>
-                      <SituationPicture place={current.data.place} />
                       <div className="relative my-5 rounded-2xl rounded-tl-sm bg-[#e7f3ed] p-5">
                         <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-[#54727b]">
                           Personen säger
