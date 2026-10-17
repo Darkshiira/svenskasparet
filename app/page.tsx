@@ -273,7 +273,7 @@ export default function Home() {
                 Din väg framåt
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-[#54727b]">
-                Välj ett område att träna på, eller fortsätt där du var.
+                Välj ett område att öva på, eller fortsätt där du var.
               </p>
             </div>
             <Link
