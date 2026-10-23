@@ -110,7 +110,8 @@ export default function EnEllerEttPage() {
   const [questions, setQuestions] = useState<typeof enEttQuestions>([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<Article | null>(null);
+  const [answers, setAnswers] = useState<Record<number, Article>>({});
+  const [furthestQuestion, setFurthestQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [savedWords, setSavedWords] = useState<string[]>([]);
 
@@ -119,7 +120,8 @@ export default function EnEllerEttPage() {
       setQuestions([]);
       setGameStarted(false);
       setQuestionIndex(0);
-      setSelectedAnswer(null);
+      setAnswers({});
+      setFurthestQuestion(0);
       setScore(0);
     }
 
@@ -185,7 +187,8 @@ export default function EnEllerEttPage() {
     const start = () => {
       setQuestions(getRandomQuestions());
       setQuestionIndex(0);
-      setSelectedAnswer(null);
+      setAnswers({});
+      setFurthestQuestion(0);
       setScore(0);
       setGameStarted(true);
     };
@@ -195,6 +198,7 @@ export default function EnEllerEttPage() {
   const finished =
     gameStarted && questions.length > 0 && questionIndex >= questions.length;
   const question = questions[questionIndex];
+  const selectedAnswer = answers[questionIndex] ?? null;
   const answered = selectedAnswer !== null;
   const isCorrect = answered && selectedAnswer === question?.correctArticle;
 
@@ -208,11 +212,11 @@ export default function EnEllerEttPage() {
         : (questionIndex / questions.length) * 100;
 
   function handleAnswer(answer: Article) {
-    if (answered || !question) return;
+    if (answered || !question || questionIndex < furthestQuestion) return;
 
     const correct = answer === question.correctArticle;
 
-    setSelectedAnswer(answer);
+    setAnswers((current) => ({ ...current, [questionIndex]: answer }));
 
     if (correct) {
       setScore((current) => current + 1);
@@ -237,6 +241,12 @@ export default function EnEllerEttPage() {
     }
   }
 
+  function handlePrevious() {
+    if (questionIndex > 0) {
+      setQuestionIndex((current) => current - 1);
+    }
+  }
+
   function handleNext() {
     if (selectedAnswer === null || finished || questions.length === 0) {
       return;
@@ -248,14 +258,15 @@ export default function EnEllerEttPage() {
       recordExerciseResult("en-eller-ett", score, questions.length);
     }
 
-    setSelectedAnswer(null);
+    setFurthestQuestion((current) => Math.max(current, questionIndex + 1));
     setQuestionIndex((current) => current + 1);
   }
 
   function handleRestart() {
     setQuestions(getRandomQuestions());
     setQuestionIndex(0);
-    setSelectedAnswer(null);
+    setAnswers({});
+    setFurthestQuestion(0);
     setScore(0);
     setGameStarted(true);
   }
@@ -406,6 +417,19 @@ export default function EnEllerEttPage() {
               </div>
 
               {answered && (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="mt-6 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#17665d] px-6 py-3 font-bold text-white shadow-sm transition hover:bg-[#104f49] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17665d] sm:mx-auto sm:w-fit sm:min-w-[190px]"
+                >
+                  {questionIndex === questions.length - 1
+                    ? "Se resultat"
+                    : "Nästa fråga"}
+                  <ArrowRight size={18} />
+                </button>
+              )}
+
+              {answered && (
                 <div
                   className={`mt-6 rounded-2xl border p-5 sm:p-6 ${
                     isCorrect
@@ -479,16 +503,17 @@ export default function EnEllerEttPage() {
                       )}
                     </div>
                   </div>
+                </div>
+              )}
 
+              {questionIndex > 0 && (
+                <div className="mt-5 flex justify-center">
                   <button
                     type="button"
-                    onClick={handleNext}
-                    className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#17665d] px-5 py-3 font-bold text-white shadow-sm transition hover:bg-[#104f49] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17665d] sm:w-auto"
+                    onClick={handlePrevious}
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-[#54727b] transition hover:bg-[#edf5f2] hover:text-[#17665d] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17665d]"
                   >
-                    {questionIndex === questions.length - 1
-                      ? "Se resultat"
-                      : "Nästa fråga"}
-                    <ArrowRight size={18} />
+                    <ArrowLeft size={17} /> Föregående fråga
                   </button>
                 </div>
               )}
@@ -540,7 +565,8 @@ export default function EnEllerEttPage() {
                     setQuestions([]);
                     setGameStarted(false);
                     setQuestionIndex(0);
-                    setSelectedAnswer(null);
+                    setAnswers({});
+                    setFurthestQuestion(0);
                     setScore(0);
                   }}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#cbdedd] bg-white px-6 py-3 font-bold text-[#285b5b] transition hover:bg-[#f4f9f7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17665d]"

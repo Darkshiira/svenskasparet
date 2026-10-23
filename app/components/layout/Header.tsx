@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Flame, Menu, X } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 type HeaderProps = {
   streak: number;
@@ -14,6 +15,7 @@ const navigation = [
   { label: "Övningar", href: "/#ovningar" },
   { label: "Ord att träna på", href: "/exercises/kluriga-ord" },
   { label: "Mina framsteg", href: "/framsteg" },
+  { label: "Om mig", href: "/om-mig" },
 ];
 
 export default function Header({ streak }: HeaderProps) {
@@ -21,6 +23,18 @@ export default function Header({ streak }: HeaderProps) {
 
   function handleExerciseNavigation() {
     window.dispatchEvent(new Event("exercise:leave"));
+  }
+
+  const pathname = usePathname();
+
+  function isActive(href: string) {
+    if (href === "/om-mig") return pathname === "/om-mig";
+    if (href === "/framsteg") return pathname === "/framsteg";
+    if (href === "/exercises/kluriga-ord") {
+      return pathname === "/exercises/kluriga-ord";
+    }
+
+    return pathname === "/" && href === "/#hem";
   }
 
   return (
@@ -57,7 +71,7 @@ export default function Header({ streak }: HeaderProps) {
               href={item.href}
               onClick={handleExerciseNavigation}
               className={`flex items-center border-b-[3px] pt-[3px] text-sm transition ${
-                index === 0
+                isActive(item.href)
                   ? "border-[#17665d] font-bold text-[#12655c]"
                   : "border-transparent font-semibold text-[#284d55] hover:text-[#12655c]"
               }`}
@@ -112,8 +126,8 @@ export default function Header({ streak }: HeaderProps) {
                 setMenuOpen(false);
               }}
               className={`flex min-h-12 items-center rounded-xl px-4 py-3 text-sm transition hover:bg-[#e8f2f1] ${
-                index === 0
-                  ? "font-bold text-[#12655c]"
+                isActive(item.href)
+                  ? "bg-[#e8f2f1] font-bold text-[#12655c]"
                   : "font-semibold text-[#284d55]"
               }`}
             >
