@@ -22,7 +22,7 @@ const projects = [
     description:
       "Ett lekfullt matteäventyr för barn mellan 6 och 9 år. Här får barn upptäcka matematik genom djur, bilder och roliga utmaningar.",
     image: "/images/Matteaventyret-screenshot.png",
-    href: "littlemathadventures.vercel.app",
+    href: "https://littlemathadventures.vercel.app",
     color: "border-[#f0dfbb] bg-[#fbf6e9]",
     badge: "bg-[#f5e8c7] text-[#80652b]",
   },
